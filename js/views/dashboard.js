@@ -15,7 +15,7 @@ function renderDash(){
   qa.appendChild(btn('addbtn',t('newSale'),function(){S.tabMode=false;S.editingTab=null;S.cart=[];S.view='pos';render();}));
   qa.appendChild(btn('btn btnpr',t('newTab'),function(){S.modal={type:'newTab'};render();}));
   sc.appendChild(qa);
-  var ts=todaySales();var todayRev=ts.reduce(function(a,s){return a+s.total;},0);
+  var ts=todaySales();var todayRev=ts.reduce(function(a,s){return a+s.total;},0)-todayRefundAmt();
   var openTabsN=S.tabs.filter(function(x){return x.status==='open';}).length;
   var lowN=lowStk().length;
   var mg=div('dash-grid');

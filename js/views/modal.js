@@ -38,6 +38,34 @@ function renderModal(){
     box.appendChild(div('mbtns',[btn('btn',t('cn'),function(){S.modal=null;render();}),btn('btn btndg',t('lgo'),async function(){await exitTabMode();S.user=null;S.modal=null;S.lstep='select';S.cart=[];S.cashReceived=0;render();})]));
     ov.appendChild(box);return ov;
   }
+  // refund (admin)
+  if(S.modal.type==='refund'){
+    var R=S.modal,sale=S.sales.find(function(x){return x.id===R.saleId;});
+    if(!sale||!isAdmin()){S.modal=null;return div('');}
+    box.classList.add('count-box');
+    box.appendChild(div('mhead',[h('h3',{},t('refundTitle',{n:sale.id})),btn('mclose',icon('x',18),function(){S.modal=null;render();})]));
+    box.appendChild(div('cnote rf-meta',new Date(sale.time).toLocaleString()+(sale.staffName?' \xb7 '+sale.staffName:'')+' \xb7 '+ks(sale.total)));
+    var totEl=h('b',{},ks(0));var confirmB;
+    function amt(){return sale.items.reduce(function(a,i,idx){return a+i.price*(R.lines[idx]||0);},0);}
+    function upd(){var a=amt();totEl.textContent=ks(a);confirmB.disabled=a<=0;confirmB.textContent=t('confirmRefund',{a:ks(a)});}
+    sale.items.forEach(function(it,idx){
+      var max=it.qty-lineRefunded(sale,idx);if(max<=0)return;
+      var n=span('rf-q',String(R.lines[idx]||0));
+      function step(d){R.lines[idx]=Math.max(0,Math.min(max,(R.lines[idx]||0)+d));n.textContent=String(R.lines[idx]);upd();}
+      box.appendChild(div('crow',[div('cl',[div('rf-nm',it.name),div('cl-a',ks(it.price)+' \xb7 '+t('maxN',{n:max}))]),div('cstep',[btn('sbtn sm',icon('minus',16),function(){step(-1);}),n,btn('sbtn sm',icon('plus',16),function(){step(1);})])]));
+    });
+    box.appendChild(btn('size-add-btn rf-all',t('refundAll'),function(){sale.items.forEach(function(i,idx){R.lines[idx]=i.qty-lineRefunded(sale,idx);});render();}));
+    var ck=h('input',{type:'checkbox'});ck.checked=R.restock!==false;ck.onchange=function(e){R.restock=e.target.checked;};
+    box.appendChild(h('label',{cls:'rf-ck'},[ck,txt(' '+t('returnStock'))]));
+    box.appendChild(div('sum-row rf-tot',[span('',t('refundAmt')),totEl]));
+    confirmB=btn('pay-btn rf-go',t('confirmRefund',{a:ks(0)}),async function(){
+      var a=amt();if(a<=0)return;if(!confirm(t('cfRefund',{a:ks(a)})))return;
+      var lines=Object.keys(R.lines).map(function(k){return{idx:parseInt(k),qty:R.lines[k]};}).filter(function(l){return l.qty>0;});
+      var ok=await refundSale(R.saleId,lines,R.restock!==false);if(ok){S.modal=null;render();}
+    });
+    box.appendChild(confirmB);upd();
+    ov.appendChild(box);return ov;
+  }
   // stock count (inventory role) — counts only, no prices
   if(S.modal.type==='count'){
     var C=S.modal.data;box.classList.add('count-box');

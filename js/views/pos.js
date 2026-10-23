@@ -20,18 +20,20 @@ function renderPOS(){
     pg.innerHTML='';var fp=fprods();
     if(!fp.length){pg.appendChild(div('','\u2014','grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);'));return;}
     fp.forEach(function(p){
-      var hasSz=p.sizes&&p.sizes.length>0;
+      var hasSz=(p.sizes&&p.sizes.length>0);
       var minStk=p.minStock||0;
-      var sc2=p.stock===0?'no':(minStk>0&&p.stock<=minStk?'lo':'');
-      var sl=p.stock===0?t('oos'):(minStk>0&&p.stock<=minStk?t('low',{n:p.stock}):t('ins',{n:p.stock}));
+      var isLo=hasSz?p.sizes.some(function(s){var m=s.minStock||0;return m>0&&(Number(s.stock)||0)<=m;}):(minStk>0&&p.stock<=minStk);
+      var sc2=p.stock<=0?'no':(isLo?'lo':'');
+      var sl=p.stock<=0?t('oos'):t('ins',{n:p.stock});
+      if(!hasSz&&isLo&&p.stock>0)sl=t('low',{n:p.stock});
       var hhOn=hh&&CFG.happyHourCats&&CFG.happyHourCats.indexOf(p.category)>=0;
       var minP=hasSz?Math.min.apply(null,p.sizes.map(function(s){return effPrice(p,s);})):effPrice(p,null);
       var maxP=hasSz?Math.max.apply(null,p.sizes.map(function(s){return effPrice(p,s);})):effPrice(p,null);
       var priceStr=hasSz?(minP===maxP?ks(minP):ks(minP)+' \u2013 '+ks(maxP)):ks(effPrice(p,null));
       var children=[div('pname',p.name),div('pprice',priceStr),div('pstock '+sc2,sl)];
-      if(hasSz)children.push(div('psize-hint',p.sizes.map(function(s){return s.label;}).join(' / ')));
+      if(hasSz)children.push(div('psize-hint',p.sizes.map(function(s){return s.label+' '+(Number(s.stock)||0);}).join(' \xb7 ')));
       if(hhOn)children.push(div('hh-badge','\u2212'+hhPct()+'%'));
-      var card=div('pcard'+(p.stock===0?' gone':''),children);
+      var card=div('pcard'+(p.stock<=0?' gone':''),children);
       card.onclick=function(){if(p.stock>0)tryAdd(p);};pg.appendChild(card);
     });
   }

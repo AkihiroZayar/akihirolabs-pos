@@ -45,9 +45,9 @@ function renderDash(){
   if(!ls.length){right.appendChild(div('',il('checkCircle',t('allOk')),'color:var(--success);font-size:13px;'));}
   else{
     var al=div('alert-list');
-    ls.slice(0,8).forEach(function(p){
-      var isDanger=p.stock<=0;
-      al.appendChild(div('alert-item'+(isDanger?' out':''),[div('alert-nm',p.name),div('alert-st'+(isDanger?' out':''),p.stock<=0?t('oos'):t('left',{n:p.stock}))]));
+    ls.slice(0,8).forEach(function(e){
+      var isDanger=e.stock<=0;
+      al.appendChild(div('alert-item'+(isDanger?' out':''),[div('alert-nm',e.name),div('alert-st'+(isDanger?' out':''),e.stock<=0?t('oos'):t('left',{n:e.stock}))]));
     });
     right.appendChild(al);
   }

@@ -11,9 +11,10 @@ function renderModal(){
     var p=S.modal.product;box.appendChild(div('size-picker-title',p.name));box.appendChild(div('size-picker-sub',t('pickSize')));
     var sb=div('size-btns');
     p.sizes.forEach(function(sz){
-      var ep=effPrice(p,sz);
-      var b=div('size-btn',[span('size-btn-lbl',sz.label),span('size-btn-price',ks(ep))]);
-      b.onclick=function(){addToCart(p.name+' ('+sz.label+')',ep,p.id);};sb.appendChild(b);
+      var ep=effPrice(p,sz);var left=(Number(sz.stock)||0)-cartQtyFor(p.id,sz.label);var out=left<=0;
+      var lo=!out&&(sz.minStock||0)>0&&(Number(sz.stock)||0)<=sz.minStock;
+      var b=div('size-btn'+(out?' off':''),[span('size-btn-lbl',sz.label),span('size-btn-price',ks(ep)),span('size-btn-stock'+(out?' no':lo?' lo':''),out?((Number(sz.stock)||0)<=0?t('oos'):t('left',{n:0})):t('left',{n:left}))]);
+      if(!out)b.onclick=function(){addToCart(p.name+' ('+sz.label+')',ep,p.id,sz.label);};sb.appendChild(b);
     });
     box.appendChild(sb);box.appendChild(btn('btn',t('cn'),function(){S.modal=null;render();}));ov.appendChild(box);return ov;
   }
@@ -40,6 +41,7 @@ function renderModal(){
   // product / staff forms
   var isStaff=S.modal.type==='astf'||S.modal.type==='estf';
   var isEdit=S.modal.type==='eprod'||S.modal.type==='estf';
+  if(!isStaff)box.classList.add('wide');
   box.appendChild(h('h3',{},isStaff?(isEdit?t('estf'):t('nstf')):(isEdit?t('eprod'):t('nprod'))));
   function field(lbl,key,type,ph){var f=div('field');f.appendChild(h('label',{},lbl));var i=inp({type:type||'text',value:S.modal.data[key]||'',placeholder:ph||''});i.oninput=function(e){S.modal.data[key]=e.target.value;};f.appendChild(i);return f;}
   if(isStaff){
@@ -52,16 +54,16 @@ function renderModal(){
   }else{
     box.appendChild(field(t('nm'),'name','text'));
     box.appendChild(field(t('cat'),'category','text',t('catex')));
-    box.appendChild(field(t('st'),'stock','number'));
-    box.appendChild(field(t('minStkHint'),'minStock','number'));
+    var stf=field(t('st'),'stock','number');var mnf=field(t('minStkHint'),'minStock','number');
+    stf.style.display=mnf.style.display=S.modal.data.hasSizes?'none':'block';box.appendChild(stf);box.appendChild(mnf);
     var tog=div('has-sizes-tog');var togBox=div('tbox'+(S.modal.data.hasSizes?' on':''));togBox.appendChild(div('tknob'));tog.appendChild(togBox);tog.appendChild(span('',t('hasSizes')));
-    tog.onclick=function(){S.modal.data.hasSizes=!S.modal.data.hasSizes;if(!S.modal.data.hasSizes)S.modal.data.sizes=[];togBox.className='tbox'+(S.modal.data.hasSizes?' on':'');sizeSec.style.display=S.modal.data.hasSizes?'block':'none';bpf.style.display=S.modal.data.hasSizes?'none':'block';};
+    tog.onclick=function(){S.modal.data.hasSizes=!S.modal.data.hasSizes;if(!S.modal.data.hasSizes)S.modal.data.sizes=[];togBox.className='tbox'+(S.modal.data.hasSizes?' on':'');sizeSec.style.display=S.modal.data.hasSizes?'block':'none';bpf.style.display=stf.style.display=mnf.style.display=S.modal.data.hasSizes?'none':'block';if(S.modal.data.hasSizes&&!(S.modal.data.sizes||[]).length){S.modal.data.sizes=[{label:'',price:0,stock:0,minStock:0}];renderSizeRows();}};
     box.appendChild(tog);
     var bpf=field(t('pr'),'price','number');bpf.style.display=S.modal.data.hasSizes?'none':'block';box.appendChild(bpf);
-    var sizeSec=div('',null,S.modal.data.hasSizes?'display:block':'display:none');var srw=div('');
-    function renderSizeRows(){srw.innerHTML='';(S.modal.data.sizes||[]).forEach(function(sz,i){var row=div('size-row');var li=inp({placeholder:t('sizeName'),value:sz.label||''});li.oninput=function(e){S.modal.data.sizes[i].label=e.target.value;};var pi=inp({type:'number',placeholder:t('sizePrice'),value:sz.price||''});pi.oninput=function(e){S.modal.data.sizes[i].price=parseInt(e.target.value)||0;};var db2=btn('size-del',icon('x',13),function(){S.modal.data.sizes.splice(i,1);renderSizeRows();});row.appendChild(li);row.appendChild(pi);row.appendChild(db2);srw.appendChild(row);});}
+    var sizeSec=div('',null,S.modal.data.hasSizes?'display:block':'display:none');sizeSec.appendChild(div('size-head',t('szHead')));var srw=div('');
+    function renderSizeRows(){srw.innerHTML='';(S.modal.data.sizes||[]).forEach(function(sz,i){var row=div('size-row');var li=inp({placeholder:t('sizeName'),value:sz.label||''});li.oninput=function(e){S.modal.data.sizes[i].label=e.target.value;};var pi=inp({type:'number',placeholder:t('sizePrice'),value:sz.price||''});pi.oninput=function(e){S.modal.data.sizes[i].price=parseInt(e.target.value)||0;};var si2=inp({type:'number',min:'0',placeholder:t('szStock'),value:sz.stock!=null?sz.stock:''});si2.oninput=function(e){S.modal.data.sizes[i].stock=Math.max(0,parseInt(e.target.value)||0);};var ai=inp({type:'number',min:'0',placeholder:t('szAlert'),value:sz.minStock||''});ai.oninput=function(e){S.modal.data.sizes[i].minStock=Math.max(0,parseInt(e.target.value)||0);};var db2=btn('size-del',icon('x',13),function(){S.modal.data.sizes.splice(i,1);renderSizeRows();});row.appendChild(li);row.appendChild(pi);row.appendChild(si2);row.appendChild(ai);row.appendChild(db2);srw.appendChild(row);});}
     renderSizeRows();sizeSec.appendChild(srw);
-    var asb=btn('size-add-btn',t('addSize'),function(){if(!S.modal.data.sizes)S.modal.data.sizes=[];S.modal.data.sizes.push({label:'',price:0});renderSizeRows();});
+    var asb=btn('size-add-btn',t('addSize'),function(){if(!S.modal.data.sizes)S.modal.data.sizes=[];S.modal.data.sizes.push({label:'',price:0,stock:0,minStock:0});renderSizeRows();});
     sizeSec.appendChild(asb);box.appendChild(sizeSec);
   }
   var btns=div('mbtns',[btn('btn',t('cn'),function(){S.modal=null;render();})]);
@@ -93,10 +95,10 @@ function renderModal(){
     }else{
       d.name=(d.name||'').trim();if(!d.name){alert(t('needName'));return;}
       d.category=(d.category||'').trim()||'Other';
-      var sizes=d.hasSizes?(d.sizes||[]).filter(function(s){return s.label&&s.price;}):[];
+      var sizes=d.hasSizes?(d.sizes||[]).map(function(s){return{label:String(s.label||'').trim(),price:parseInt(s.price)||0,stock:Math.max(0,parseInt(s.stock)||0),minStock:Math.max(0,parseInt(s.minStock)||0)};}).filter(function(s){return s.label&&s.price;}):[];
       var basePrice=d.hasSizes&&sizes.length?sizes[0].price:parseInt(d.price)||0;
-      var item2=Object.assign({},d,{price:basePrice,stock:parseInt(d.stock)||0,minStock:parseInt(d.minStock)||0,sizes:sizes});
-      delete item2.hasSizes;
+      var item2=Object.assign({},d,{price:basePrice,stock:Math.max(0,parseInt(d.stock)||0),minStock:parseInt(d.minStock)||0,sizes:sizes});
+      syncStock(item2);delete item2.hasSizes;delete item2.needsCount;
       if(item2.id)await dbPut('products',item2);else await dbAdd('products',item2);S.products=await dbAll('products');
     }
     S.modal=null;render();

@@ -3,6 +3,26 @@
 All notable changes to **AkihiroLabs POS** are documented here.
 This project follows [Semantic Versioning](https://semver.org/).
 
+## [10.5.0] — 2026-10-23
+
+### Added
+- **Inventory role** for stock staff. Inventory users only see the Inventory screen and can change
+  stock counts and alert levels (per size, too). Name, category, price and sizes are read-only for
+  them, and they can't add or delete products.
+- Role permissions:
+
+  | | Admin | Cashier | Inventory |
+  |---|---|---|---|
+  | Sell, tabs | ✓ | ✓ | – |
+  | See stock | ✓ | ✓ | ✓ |
+  | Edit stock counts | ✓ | – | ✓ |
+  | Edit name / price / sizes, add or delete products | ✓ | – | – |
+  | Reports, staff, settings | ✓ | – | – |
+
+### Changed
+- Inventory stock column is now **read-only** (−/+ buttons removed). Stock changes only through
+  **Edit** or sales. Low counts show in orange, sold out in red.
+
 ## [10.4.0] — 2026-10-23
 
 ### Added

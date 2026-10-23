@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-10.4.0-1E3A8A" alt="version 10.4.0">
+  <img src="https://img.shields.io/badge/version-10.5.0-1E3A8A" alt="version 10.5.0">
   <img src="https://img.shields.io/badge/vanilla-JavaScript-00A8CC" alt="Vanilla JS">
   <img src="https://img.shields.io/badge/storage-IndexedDB-1E3A8A" alt="IndexedDB">
   <img src="https://img.shields.io/badge/lang-English%20%7C%20Burmese-00A8CC" alt="English | Burmese">
@@ -20,12 +20,12 @@
 
 ## Features
 
-- **Staff login** — pick your name and enter a 4-digit PIN. Admin and Cashier roles.
+- **Staff login & roles** — pick your name and enter a 4-digit PIN. Three roles: **Admin** (everything), **Cashier** (POS, tabs, view stock) and **Inventory** (stock counts and alert levels only).
 - **Fast checkout** — product grid with search and categories, large touch-friendly cash numpad, quick-cash buttons and automatic change calculation.
 - **Size variants** — like a real POS: each size (S / M / L…) has its own price, stock count and low-stock alert. Selling a size only takes from that size.
 - **Customer tabs** — open a tab for a table or guest, add items over time, then charge and close.
 - **Happy hour** — automatic % discount on chosen categories during a set time window.
-- **Inventory** — stock tracking, +/- adjust, and low-stock alerts per product.
+- **Inventory** — read-only stock list with low-stock alerts; counts are changed through **Edit** (Admin or Inventory role) and by sales.
 - **Dashboard** — today's revenue and orders, top sellers, low stock and open tabs at a glance.
 - **Reports** — filter by date range, product breakdown and recent sales log.
 - **Export** — CSV (Excel-friendly, UTF-8) and PDF reports with Burmese script support.
@@ -103,7 +103,7 @@ This project uses [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PATCH
 - The version lives in **`js/version.js`** and is shown in the app footer and PDF reports.
 - To release: bump `APP_VERSION`, add an entry to [`CHANGELOG.md`](CHANGELOG.md), then create a GitHub Release tagged `vX.Y.Z`.
 
-Current version: **v10.4.0** — see the [changelog](CHANGELOG.md).
+Current version: **v10.5.0** — see the [changelog](CHANGELOG.md).
 
 ## Community
 

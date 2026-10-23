@@ -16,8 +16,10 @@ function render(){
   else if(S.view==='stf')views=renderStaff();
   else if(S.view==='sett')views=renderSett();
   views.forEach(function(v){main.appendChild(v);});
+  // Top bar is shared by every view and always full width, so the nav never moves.
+  shell.appendChild(mkTopbar());
   shell.appendChild(main);
-  if(S.view!=='pos'&&S.view!=='dash')shell.appendChild(mkFooter());
+  if(S.view!=='pos')shell.appendChild(mkFooter());
   root.appendChild(shell);
   if(S.modal)root.appendChild(renderModal());
 }

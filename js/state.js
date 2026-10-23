@@ -69,7 +69,9 @@ function sizeFromName(p,name){if(!hasSz(p))return null;var m=/\(([^()]*)\)\s*$/.
 function cats(){var a=['All'],seen={};S.products.forEach(function(p){if(!seen[p.category]){seen[p.category]=1;a.push(p.category);}});return a.sort(function(a,b){return a==='All'?-1:b==='All'?1:a.localeCompare(b);});}
 function fprods(){return S.products.filter(function(p){return(S.cat==='All'||p.category===S.cat)&&p.name.toLowerCase().indexOf(S.search.toLowerCase())>=0;});}
 function cartTotal(){return S.cart.reduce(function(a,i){return a+i.price*i.qty;},0);}
-function fsales(){return S.sales.filter(function(s){var d=new Date(s.time);if(S.from){var f=parseYmd(S.from);if(d<f)return false;}if(S.to){var f2=parseYmd(S.to);f2.setHours(23,59,59,999);if(d>f2)return false;}return true;});}
+function inRange(time){var d=new Date(time);if(S.from){var f=parseYmd(S.from);if(d<f)return false;}if(S.to){var f2=parseYmd(S.to);f2.setHours(23,59,59,999);if(d>f2)return false;}return true;}
+function fsales(){return S.sales.filter(function(s){return inRange(s.time);});}
+function isToday(time){return new Date(time).toDateString()===new Date().toDateString();}
 function qAmts(total){if(total<=0)return[];var a=[];[1000,2000,5000,10000,20000,50000].forEach(function(u){var v=Math.ceil(total/u)*u;if(v>=total)a.push(v);});if(a.indexOf(total)<0)a.push(total);return a.filter(function(x){return x>=total;}).filter(function(x,i,arr){return arr.indexOf(x)===i;}).sort(function(a,b){return a-b;}).slice(0,3);}
 function todaySales(){var td=new Date().toDateString();return S.sales.filter(function(s){return new Date(s.time).toDateString()===td;});}
 // Low-stock list. Products with sizes are checked size by size: [{name, stock, prod, size}]
@@ -77,7 +79,42 @@ function lowStk(){var out=[];S.products.forEach(function(p){
   if(hasSz(p)){p.sizes.forEach(function(s){var m=s.minStock||0,st=Number(s.stock)||0;if(st<=0||(m>0&&st<=m))out.push({name:p.name+' ('+s.label+')',stock:st,prod:p,size:s.label});});}
   else{var m=p.minStock||0;if(p.stock<=0||(m>0&&p.stock<=m))out.push({name:p.name,stock:p.stock,prod:p,size:null});}
 });return out.sort(function(a,b){return a.stock-b.stock;});}
-function topProds(n){var pm={};todaySales().forEach(function(s){s.items.forEach(function(i){if(!pm[i.name])pm[i.name]={q:0,r:0};pm[i.name].q+=i.qty;pm[i.name].r+=i.price*i.qty;});});return Object.entries(pm).sort(function(a,b){return b[1].r-a[1].r;}).slice(0,n||5);}
+function topProds(n){var pm={};todaySales().forEach(function(s){netItems(s).forEach(function(i){if(!pm[i.name])pm[i.name]={q:0,r:0};pm[i.name].q+=i.qty;pm[i.name].r+=i.price*i.qty;});});return Object.entries(pm).sort(function(a,b){return b[1].r-a[1].r;}).slice(0,n||5);}
+
+// ── Refunds ─────────────────────────────────────────────────
+// A refund is stored on its sale: sale.refunds=[{time,staffName,items:[{idx,name,price,qty,prodId,size}],amount,restock}]
+// Reports count a refund on the day it was given (like a real POS).
+function lineRefunded(s,idx){return (s.refunds||[]).reduce(function(a,r){return a+r.items.reduce(function(b,x){return b+(x.idx===idx?x.qty:0);},0);},0);}
+function saleRefunded(s){return (s.refunds||[]).reduce(function(a,r){return a+(r.amount||0);},0);}
+function netItems(s){return s.items.map(function(i,idx){return Object.assign({},i,{qty:i.qty-lineRefunded(s,idx)});}).filter(function(i){return i.qty>0;});}
+function allRefunds(){var out=[];S.sales.forEach(function(s){(s.refunds||[]).forEach(function(r){out.push(Object.assign({saleId:s.id},r));});});return out;}
+function sumRefunds(list){return list.reduce(function(a,r){return a+(r.amount||0);},0);}
+function todayRefundAmt(){return sumRefunds(allRefunds().filter(function(r){return isToday(r.time);}));}
+function periodRefundAmt(){return sumRefunds(allRefunds().filter(function(r){return inRange(r.time);}));}
+async function returnStock(items){
+  var touched={};
+  items.forEach(function(i){var p=S.products.find(function(x){return x.id===i.prodId;});if(!p)return;
+    var size=i.size||sizeFromName(p,i.name);var sz=size!=null?findSz(p,size):null;
+    if(sz){sz.stock=(Number(sz.stock)||0)+i.qty;syncStock(p);}else if(!hasSz(p)){p.stock=(Number(p.stock)||0)+i.qty;}
+    touched[p.id]=p;});
+  for(var id in touched)await dbPut('products',touched[id]);
+}
+async function refundSale(saleId,lines,restock){
+  if(S.busy||!isAdmin())return false;
+  var s=S.sales.find(function(x){return x.id===saleId;});if(!s)return false;
+  var items=[];
+  lines.forEach(function(l){var it=s.items[l.idx];if(!it)return;var q=Math.min(l.qty,it.qty-lineRefunded(s,l.idx));if(q>0)items.push({idx:l.idx,name:it.name,price:it.price,qty:q,prodId:it.prodId,size:it.size||null});});
+  if(!items.length)return false;
+  S.busy=true;
+  try{
+    var amount=items.reduce(function(a,i){return a+i.price*i.qty;},0);
+    s.refunds=(s.refunds||[]).concat([{time:new Date().toISOString(),staffId:S.user?S.user.id:null,staffName:S.user?S.user.name:'',items:items,amount:amount,restock:!!restock}]);
+    await dbPut('sales',s);
+    if(restock)await returnStock(items);
+    S.sales=await dbAll('sales');S.products=await dbAll('products');
+  }finally{S.busy=false;}
+  return true;
+}
 
 // ── Cart ────────────────────────────────────────────────────
 // Take sold items out of stock. Sized items come out of their own size only.

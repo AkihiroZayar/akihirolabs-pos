@@ -277,3 +277,5 @@ input[type=date]::-webkit-calendar-picker-indicator{opacity:.5}
 /* Discord link */
 .discord-link{display:inline-flex;align-items:center;gap:5px;color:var(--accent);text-decoration:none;font-weight:600}
 .discord-link:hover{text-decoration:underline}
+.dash-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media (max-width:700px){.dash-cols{grid-template-columns:1fr}}

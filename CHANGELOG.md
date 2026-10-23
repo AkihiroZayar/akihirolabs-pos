@@ -3,6 +3,14 @@
 All notable changes to **AkihiroLabs POS** are documented here.
 This project follows [Semantic Versioning](https://semver.org/).
 
+## [10.3.2] — 2026-10-23
+
+### Fixed
+- Switching from POS to another screen no longer makes the navigation jump. The top bar is
+  now rendered once in `app.js`, full width, above every view (it used to sit inside the
+  POS product column only, and wrapped to two lines on tablets).
+- Footer now also shows on the Dashboard.
+
 ## [10.3.1] — 2026-10-23
 
 ### Changed

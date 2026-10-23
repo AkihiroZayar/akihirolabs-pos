@@ -30,7 +30,7 @@ function render(){
     await seed();
     render();
   }catch(err){
-    document.getElementById('root').innerHTML='<div style="color:#ef4444;padding:30px;font-family:monospace;font-size:13px;">Error: '+err.message+'<br><br>'+err.stack+'</div>';
+    document.getElementById('root').innerHTML='<div style="color:#B91C1C;padding:30px;font-family:monospace;font-size:13px;">Error: '+err.message+'<br><br>'+err.stack+'</div>';
     console.error(err);
   }
 })();

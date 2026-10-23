@@ -3,5 +3,5 @@
  * Single source of truth for the app version. Bump this on every release.
  * https://github.com/AkihiroZayar/POS-SYTEM
  */
-var APP_VERSION='10.2.0';
+var APP_VERSION='10.3.1';
 var APP_BRAND='AkihiroLabs';

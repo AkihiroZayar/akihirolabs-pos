@@ -56,6 +56,16 @@ function icon(name,size,cls){
 function il(name,label,size){return [icon(name,size),txt(' '+label)];}
 var DISCORD_URL='https://discord.gg/HSuaC72xMD';
 
+// ── Roles ───────────────────────────────────────────────────
+// admin: everything · cashier: selling · inventory: stock counts only
+var ROLE_VIEWS={admin:['dash','pos','tabs','inv','rep','stf','sett'],cashier:['pos','tabs','inv'],inventory:['inv']};
+function role(){return S.user?S.user.role:null;}
+function allowedViews(){return ROLE_VIEWS[role()]||ROLE_VIEWS.cashier;}
+function isAdmin(){return role()==='admin';}
+function canEditStock(){return role()==='admin'||role()==='inventory';}
+function roleLabel(r){return t(r==='admin'?'adm':r==='inventory'?'invRole':'cas');}
+function roleBadge(r){return r==='admin'?'badm':r==='inventory'?'binv':'bcas';}
+
 // ── Topbar ──────────────────────────────────────────────────
 function mkTopbar(){
   var tb=div('topbar');
@@ -64,7 +74,7 @@ function mkTopbar(){
   var lt=div('langt');
   ['en','my'].forEach(function(l){lt.appendChild(btn('langb'+(lang===l?' on':''),l==='en'?'EN':'\u1019\u103c\u1014\u103a\u1019\u102c',function(){setLang(l);}));});
   tb.appendChild(lt);
-  var tabs=S.user&&S.user.role==='admin'?['dash','pos','tabs','inv','rep','stf','sett']:['pos','tabs','inv'];
+  var tabs=allowedViews();
   tabs.forEach(function(v){tb.appendChild(btn('nb'+(S.view===v?' on':''),t(v),async function(){if(S.tabMode&&(v!=='pos'||S.view==='pos'))await exitTabMode();S.view=v;render();}));});
   var chip=div('uchip',[div('udot'),span('',S.user?S.user.name:'')]);
   chip.onclick=function(){S.modal={type:'lgo'};render();};

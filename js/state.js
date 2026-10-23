@@ -141,6 +141,3 @@ async function chargeTab(){
   render();
 }
 async function delTab(tab){if(!confirm(t('cfDelTab',{n:tab.name})))return;await dbDel('tabs',tab.id);S.tabs=await dbAll('tabs');render();}
-async function adjStock(id,delta,size){var p=S.products.find(function(x){return x.id===id;});if(!p)return;
-  if(size!=null){var sz=findSz(p,size);if(!sz)return;sz.stock=Math.max(0,(Number(sz.stock)||0)+delta);syncStock(p);delete p.needsCount;}
-  else p.stock=Math.max(0,p.stock+delta);await dbPut('products',p);S.products=await dbAll('products');render();}

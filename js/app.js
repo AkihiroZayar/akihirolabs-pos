@@ -7,6 +7,7 @@
 function render(){
   var root=document.getElementById('root');root.innerHTML='';
   if(!S.user){root.appendChild(renderLogin());return;}
+  if(allowedViews().indexOf(S.view)<0)S.view=allowedViews()[0];
   var shell=div('shell');var main=div('main');var views=[];
   if(S.view==='dash')views=renderDash();
   else if(S.view==='pos')views=renderPOS();

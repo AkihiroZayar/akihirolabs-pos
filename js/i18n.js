@@ -32,7 +32,7 @@ var TR={
     rsOk:'Restore complete. Please log in again.',rsFail:'Restore failed: ',rsBad:'This is not a valid POS backup file.',
     pinBad:'PIN must be exactly 4 digits.',lastAdm:'Keep at least one admin.',selfDel:'You cannot delete the account you are logged in with.',needName:'Please enter a name.',
     setCounts:'Set counts',needCount:'{n} product(s) with sizes need a stock count — tap Edit and enter how many of each size you have.',
-    szStock:'Stock',szAlert:'Alert at',szHead:'Size · Price · Stock · Alert at',perSize:'Stock is counted per size'},
+    szStock:'Stock',szAlert:'Alert at',szHead:'Size · Price · Stock · Alert at',perSize:'Stock is counted per size',invRole:'Inventory',invOnly:'You can change stock counts and alert levels. Name, price and sizes are admin-only.'},
   my:{app:'POS စနစ်',dash:'ပင်မစာမျက်နှာ',pos:'ရောင်းချမှု',tabs:'အကြွေးစာရင်း',inv:'ကုန်ပစ္စည်း',rep:'အစီရင်ခံစာ',stf:'ဝန်ထမ်း',sett:'ဆက်တင်',
     srch:'ကုန်ပစ္စည်းရှာ…',cart:'ခြင်းတောင်း',clr:'ဖျက်',emp:'ကုန်ပစ္စည်းထည့်ရန် နှိပ်ပါ',
     sub:'စုစုပေါင်း',tot:'ကျသင့်ငွေ',ins:'လက်ကျန်:{n}',low:'{n} ခုသာ ကျန်',oos:'ပစ္စည်းပြတ်',
@@ -60,7 +60,7 @@ var TR={
     rsOk:'ပြန်ယူပြီးပါပြီ။ ပြန်လည် ဝင်ရောက်ပါ။',rsFail:'ပြန်ယူ၍ မရပါ: ',rsBad:'မှန်ကန်သော Backup ဖိုင် မဟုတ်ပါ။',
     pinBad:'PIN သည် ဂဏန်း ၄ လုံး ဖြစ်ရမည်။',lastAdm:'မန်နေဂျာ အနည်းဆုံး တစ်ယောက် ထားရမည်။',selfDel:'လက်ရှိ ဝင်ထားသော အကောင့်ကို ဖျက်၍ မရပါ။',needName:'အမည် ထည့်ပါ။',
     setCounts:'အရေအတွက် ထည့်ရန်',needCount:'အရွယ်ပါ ကုန်ပစ္စည်း {n} ခု၏ လက်ကျန်ကို ရေတွက်ထည့်ပါ — ပြင် ကိုနှိပ်ပြီး အရွယ်တစ်ခုချင်း အရေအတွက် ထည့်ပါ။',
-    szStock:'လက်ကျန်',szAlert:'သတိပေး',szHead:'အရွယ် · ဈေး · လက်ကျန် · သတိပေး',perSize:'လက်ကျန်ကို အရွယ်အလိုက် ရေတွက်သည်'}
+    szStock:'လက်ကျန်',szAlert:'သတိပေး',szHead:'အရွယ် · ဈေး · လက်ကျန် · သတိပေး',perSize:'လက်ကျန်ကို အရွယ်အလိုက် ရေတွက်သည်',invRole:'ကုန်လှောင်ရုံ',invOnly:'လက်ကျန် အရေအတွက်နှင့် သတိပေးအဆင့်ကိုသာ ပြင်နိုင်သည်။ အမည်၊ ဈေးနှုန်း၊ အရွယ်များကို မန်နေဂျာသာ ပြင်နိုင်သည်။'}
 };
 var lang='en';
 try{var _sl=localStorage.getItem('pos_lang');if(_sl==='en'||_sl==='my')lang=_sl;}catch(e){}

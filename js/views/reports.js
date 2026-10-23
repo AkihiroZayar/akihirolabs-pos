@@ -25,7 +25,15 @@ function renderRep(){
   if(!ents.length){var tr=h('tr');var td=h('td',{colspan:'3',style:'text-align:center;color:var(--muted);padding:16px'},t('nos'));tr.appendChild(td);ptb.appendChild(tr);}
   ents.forEach(function(e){var tr=h('tr');[e[0],e[1].q,ks(e[1].r)].forEach(function(v){tr.appendChild(h('td',{},String(v)));});ptb.appendChild(tr);});
   pt.appendChild(ptb);sc.appendChild(pt);
-  sc.appendChild(div('sechd',[span('sectit',t('rec'))]));
+  // shifts
+  sc.appendChild(div('sechd',[span('sectit',t('shifts'))],'margin-top:8px'));
+  var shs=S.shifts.filter(function(x){return x.status==='closed'&&inRange(x.closedAt);}).sort(function(a,b){return b.id-a.id;}).slice(0,20);
+  if(!shs.length)sc.appendChild(div('',t('noShifts'),'text-align:center;color:var(--muted);font-size:12px;padding:16px;'));
+  else{var sl=div('inv-list shift-list');shs.forEach(function(x){
+    var r=div('inv-row click',[div('inv-l',[div('inv-nm','#'+x.id+' \xb7 '+new Date(x.openedAt).toLocaleDateString()+' '+hm(x.openedAt)+'–'+hm(x.closedAt)),div('inv-sub',[span('',(x.closedBy||'')+' \xb7 '+t('ordersN')+' '+x.orders)])]),
+      div('inv-r',[div('inv-pr',ks(x.countedCash)),div('inv-st',[span('badge '+diffCls(x.difference),diffLabel(x.difference))])])]);
+    r.onclick=function(){S.modal={type:'shiftReport',id:x.id};render();};sl.appendChild(r);});sc.appendChild(sl);}
+  sc.appendChild(div('sechd',[span('sectit',t('rec'))],'margin-top:14px'));
   var recent=[].concat(sales).reverse().slice(0,30);
   if(!recent.length)sc.appendChild(div('',t('nos'),'text-align:center;color:var(--muted);font-size:12px;padding:24px;'));
   recent.forEach(function(s){

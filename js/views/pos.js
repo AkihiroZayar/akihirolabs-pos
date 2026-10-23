@@ -5,6 +5,7 @@
  */
 // ── POS ─────────────────────────────────────────────────────
 function renderPOS(){
+  if(shiftNeeded())return[renderShiftGate()];
   var lc=div('lcol');var rc=div('rcol');
   var lf=div('lfilters');var sw=div('swrap');
   var ico=icon('search',13,'sico');
@@ -87,4 +88,14 @@ function renderPOS(){
     var pb=document.getElementById('pay-btn');if(pb)pb.disabled=(S.cart.length===0||ch<0);
   }
   return[lc,rc];
+}
+
+// Shown instead of POS when a shift must be opened first
+function renderShiftGate(){
+  var wrap=div('fullcol');var sc=div('scroll shift-gate');
+  var amt=inp({cls:'cnum wide',type:'number',min:'0',inputmode:'numeric',placeholder:'0'});
+  var card=div('gate-card',[icon('wallet',28,'gate-ico'),h('h3',{},t('mustOpen')),div('cnote',t('startCashHint')),
+    div('field',[h('label',{},t('startCash')),amt]),
+    btn('pay-btn',t('openShift'),async function(){await startShift(amt.value);render();})]);
+  sc.appendChild(card);wrap.appendChild(sc);setTimeout(function(){amt.focus();},60);return wrap;
 }

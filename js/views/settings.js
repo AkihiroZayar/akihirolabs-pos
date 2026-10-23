@@ -42,6 +42,12 @@ function renderSett(){
   });
   hh.appendChild(catRow);sc.appendChild(hh);
   // Backup
+  // Cash drawer
+  var cd=div('set-sec');cd.appendChild(div('set-sec-title',il('wallet',t('drawerSet'))));
+  var rqRow=div('set-row',[div('',[div('set-lbl',t('reqShift')),div('set-sub',t('reqShiftSub'))])]);
+  var rqTog=div('tbox'+(CFG.requireShift!==false?' on':''));rqTog.appendChild(div('tknob'));
+  rqTog.onclick=async function(){CFG.requireShift=CFG.requireShift===false;await saveCFG();render();};
+  rqRow.appendChild(rqTog);cd.appendChild(rqRow);sc.appendChild(cd);
   var bkp=div('set-sec');bkp.appendChild(div('set-sec-title',il('save',t('bkpSet'))));
   var bRow=div('set-row',[div('',[div('set-lbl',t('backupData')),div('set-sub',t('bkSub'))])]);
   var bb=btn('btn btnsm',t('backupData'),doBackup);bb.style.fontSize='11px';bRow.appendChild(bb);bkp.appendChild(bRow);

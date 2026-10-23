@@ -38,6 +38,46 @@ function renderModal(){
     box.appendChild(div('mbtns',[btn('btn',t('cn'),function(){S.modal=null;render();}),btn('btn btndg',t('lgo'),async function(){await exitTabMode();S.user=null;S.modal=null;S.lstep='select';S.cart=[];S.cashReceived=0;render();})]));
     ov.appendChild(box);return ov;
   }
+  // open shift
+  if(S.modal.type==='openShift'){
+    box.classList.add('count-box');
+    box.appendChild(div('mhead',[h('h3',{},t('openShift')),btn('mclose',icon('x',18),function(){S.modal=null;render();})]));
+    var oa=inp({cls:'cnum wide',type:'number',min:'0',inputmode:'numeric',placeholder:'0'});
+    box.appendChild(div('cnote rf-meta',t('startCashHint')));
+    box.appendChild(div('field',[h('label',{},t('startCash')),oa]));
+    box.appendChild(btn('pay-btn',t('openShift'),async function(){await startShift(oa.value);S.modal=null;render();}));
+    ov.appendChild(box);setTimeout(function(){oa.focus();},60);return ov;
+  }
+  // close shift
+  if(S.modal.type==='closeShift'){
+    var sh=openShiftRec();if(!sh){S.modal=null;return div('');}
+    var st=shiftStats(sh);box.classList.add('count-box');
+    box.appendChild(div('mhead',[h('h3',{},t('closeShift')),btn('mclose',icon('x',18),function(){S.modal=null;render();})]));
+    box.appendChild(shiftRows(sh,st));
+    var ca=inp({cls:'cnum wide',type:'number',min:'0',inputmode:'numeric',placeholder:'0'});
+    var dEl=span('badge bcas','—');
+    ca.oninput=function(){if(ca.value===''){dEl.className='badge bcas';dEl.textContent='—';return;}var d=(parseInt(ca.value)||0)-st.expected;dEl.className='badge '+diffCls(d);dEl.textContent=diffLabel(d);};
+    box.appendChild(div('field',[h('label',{},t('counted')),ca,div('cnote shint',t('countHint'))]));
+    box.appendChild(div('sum-row rf-tot',[span('',t('diff')),dEl]));
+    var nt=inp({type:'text',placeholder:t('shiftNote')});box.appendChild(div('field',[nt]));
+    box.appendChild(btn('pay-btn',t('closeShift'),async function(){
+      if(ca.value===''){ca.focus();return;}
+      if(!confirm(t('cfClose',{a:ks(parseInt(ca.value)||0)})))return;
+      var done=await endShift(ca.value,nt.value.trim());S.modal=done?{type:'shiftReport',id:done.id}:null;render();
+    }));
+    ov.appendChild(box);setTimeout(function(){ca.focus();},60);return ov;
+  }
+  // shift report (Z-report)
+  if(S.modal.type==='shiftReport'){
+    var rs=S.shifts.find(function(x){return x.id===S.modal.id;});if(!rs){S.modal=null;return div('');}
+    box.classList.add('count-box');
+    box.appendChild(div('mhead',[h('h3',{},t('shiftReport')+' #'+rs.id),btn('mclose',icon('x',18),function(){S.modal=null;render();})]));
+    box.appendChild(shiftRows(rs,rs));
+    box.appendChild(div('stock-sum shift-sum',[div('sum-row strong',[span('',t('counted')),h('b',{},ks(rs.countedCash))]),div('sum-row',[span('',t('diff')),span('badge '+diffCls(rs.difference),diffLabel(rs.difference))])]));
+    if(rs.note)box.appendChild(div('cnote rf-meta',rs.note));
+    box.appendChild(div('mbtns mbtns-split',[btn('btn',il('download',t('savePdf'),13),function(){doShiftPDF(rs);}),btn('btn btnpr',t('ok'),function(){S.modal=null;render();})]));
+    ov.appendChild(box);return ov;
+  }
   // refund (admin)
   if(S.modal.type==='refund'){
     var R=S.modal,sale=S.sales.find(function(x){return x.id===R.saleId;});

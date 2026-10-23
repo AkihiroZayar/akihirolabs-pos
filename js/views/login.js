@@ -16,7 +16,7 @@ function renderLogin(){
     card.appendChild(div('',t('sel'),'font-size:13px;color:var(--muted);margin-bottom:12px'));
     var list=div('slist');
     S.staff.forEach(function(s){
-      var item=div('sitem',[div('savatar',s.initials||(s.name.slice(0,2).toUpperCase())),div('',[div('sname',s.name),div('srole',t(s.role==='admin'?'adm':'cas'))])]);
+      var item=div('sitem',[div('savatar',s.initials||(s.name.slice(0,2).toUpperCase())),div('',[div('sname',s.name),div('srole',roleLabel(s.role))])]);
       item.onclick=function(){S.lstaff=s;S.lstep='pin';S.lpin='';render();};
       list.appendChild(item);
     });
@@ -34,7 +34,7 @@ function renderLogin(){
           S.lpin=S.lpin.slice(0,i)+v+S.lpin.slice(i+1);
           if(v&&i<3)pg.children[i+1].focus();
           if(S.lpin.length===4){
-            if(S.lpin===String(S.lstaff.pin)){S.user=S.lstaff;S.lstep='select';S.lpin='';S.view=S.lstaff.role==='admin'?'dash':'pos';render();}
+            if(S.lpin===String(S.lstaff.pin)){S.user=S.lstaff;S.lstep='select';S.lpin='';S.view=allowedViews()[0];render();}
             else{S.lpin='';var err=document.getElementById('perr');if(err)err.textContent=t('wpin');Array.from(pg.children).forEach(function(c){c.value='';});pg.children[0].focus();}
           }
         };

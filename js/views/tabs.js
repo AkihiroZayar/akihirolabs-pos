@@ -5,7 +5,7 @@
  */
 // ── Tabs view ───────────────────────────────────────────────
 function renderTabs(){
-  var wrap=div('fullcol');wrap.appendChild(mkTopbar());var sc=div('scroll');
+  var wrap=div('fullcol');var sc=div('scroll');
   var hd=div('sechd',[span('sectit',t('openTabs')),btn('addbtn','+ '+t('newTab'),function(){S.modal={type:'newTab'};render();})]);sc.appendChild(hd);
   var open=S.tabs.filter(function(x){return x.status==='open';});
   if(!open.length){sc.appendChild(div('',t('noTabs'),'text-align:center;color:var(--muted);padding:40px;font-size:13px;'));}

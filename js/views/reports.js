@@ -5,7 +5,7 @@
  */
 // ── Reports ─────────────────────────────────────────────────
 function renderRep(){
-  var wrap=div('fullcol');wrap.appendChild(mkTopbar());var sc=div('scroll');
+  var wrap=div('fullcol');var sc=div('scroll');
   var fr=div('frow');
   fr.appendChild(span('flbl',t('fr')));var fi=inp({cls:'dinput',type:'date',value:S.from});fi.onchange=function(e){S.from=e.target.value;render();};fr.appendChild(fi);
   fr.appendChild(span('flbl',t('tw')));var ti=inp({cls:'dinput',type:'date',value:S.to});ti.onchange=function(e){S.to=e.target.value;render();};fr.appendChild(ti);

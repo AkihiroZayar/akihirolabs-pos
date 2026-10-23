@@ -5,7 +5,7 @@
  */
 // ── Staff ───────────────────────────────────────────────────
 function renderStaff(){
-  var wrap=div('fullcol');wrap.appendChild(mkTopbar());var sc=div('scroll');
+  var wrap=div('fullcol');var sc=div('scroll');
   var hd=div('sechd',[span('sectit',t('stf')),btn('addbtn','+ '+t('astf'),function(){S.modal={type:'astf',data:{name:'',pin:'',role:'cashier',initials:''}};render();})]);
   sc.appendChild(hd);
   var sg=div('staffgrid');

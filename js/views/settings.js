@@ -5,7 +5,7 @@
  */
 // ── Settings ────────────────────────────────────────────────
 function renderSett(){
-  var wrap=div('fullcol');wrap.appendChild(mkTopbar());var sc=div('scroll');
+  var wrap=div('fullcol');var sc=div('scroll');
   sc.appendChild(div('sechd',[span('sectit',t('sett'))]));
   function sInp(key,ph,type){
     var i=inp({cls:'sinp',type:type||'text',value:CFG[key]||'',placeholder:ph||''});

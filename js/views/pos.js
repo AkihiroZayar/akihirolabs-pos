@@ -5,7 +5,7 @@
  */
 // ── POS ─────────────────────────────────────────────────────
 function renderPOS(){
-  var lc=div('lcol');var rc=div('rcol');lc.appendChild(mkTopbar());
+  var lc=div('lcol');var rc=div('rcol');
   var lf=div('lfilters');var sw=div('swrap');
   var ico=icon('search',13,'sico');
   sw.appendChild(ico);

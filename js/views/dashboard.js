@@ -5,7 +5,7 @@
  */
 // ── Dashboard ───────────────────────────────────────────────
 function renderDash(){
-  var wrap=div('fullcol');wrap.appendChild(mkTopbar());var sc=div('scroll');
+  var wrap=div('fullcol');var sc=div('scroll');
   if(isHH()){
     var b=div('hh-banner',[icon('percent',18),div('',[div('hh-title','Happy Hour Active! \u2212'+CFG.happyHourDiscount+'%'),div('hh-sub','Until '+CFG.happyHourEnd+' \xb7 '+CFG.happyHourCats.join(', '))])]);
     sc.appendChild(b);

@@ -5,7 +5,7 @@
  */
 // ── Inventory ───────────────────────────────────────────────
 function renderInv(){
-  var wrap=div('fullcol');wrap.appendChild(mkTopbar());var sc=div('scroll');
+  var wrap=div('fullcol');var sc=div('scroll');
   var hd=div('sechd',[span('sectit',t('inv'))]);
   if(S.user&&S.user.role==='admin'){hd.appendChild(btn('addbtn','+ '+t('aprod'),function(){S.modal={type:'aprod',data:{name:'',price:'',stock:'',category:'',minStock:'5',hasSizes:false,sizes:[]}};render();}));}
   sc.appendChild(hd);

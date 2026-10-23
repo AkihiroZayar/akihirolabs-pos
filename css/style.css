@@ -374,3 +374,19 @@ input[type=date]::-webkit-calendar-picker-indicator{opacity:.5}
 .rf-tot{display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-top:1px solid var(--border);margin-top:6px}
 .rf-go{background:var(--danger);margin-top:6px}
 .rf-go:hover{background:#991B1B}
+/* shifts (v10.8) */
+.shiftchip{display:flex;align-items:center;gap:4px}
+.shiftchip.open{border-color:rgba(21,128,61,.35);color:var(--success)}
+.shift-gate{display:flex;align-items:flex-start;justify-content:center;padding-top:60px}
+.gate-card{width:100%;max-width:360px;border:1px solid var(--border);border-radius:var(--rl);padding:24px;text-align:center;background:var(--bg)}
+.gate-card h3{font-size:16px;margin:8px 0 4px}
+.gate-card .field{text-align:left;margin:16px 0 12px}
+.gate-ico{color:var(--accent)}
+.cnum.wide{width:100%;height:52px;font-size:22px}
+.shift-sum{border:1px solid var(--border);border-radius:var(--r);padding:8px 12px;margin-bottom:12px}
+.shift-sum .sum-row{padding:4px 0}
+.shift-sum .sum-row span{color:var(--muted)}
+.shift-sum .sum-row.strong{border-top:1px solid var(--border);margin-top:4px;padding-top:8px}
+.shift-sum .sum-row.strong span{color:var(--text);font-weight:600}
+.shift-list{margin-bottom:6px}
+.shint{text-align:left;margin-top:6px}

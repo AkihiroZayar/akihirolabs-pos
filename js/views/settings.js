@@ -13,13 +13,13 @@ function renderSett(){
     return i;
   }
   // Business
-  var biz=div('set-sec');biz.appendChild(div('set-sec-title','\uD83C\uDFEA '+t('bizSet')));
+  var biz=div('set-sec');biz.appendChild(div('set-sec-title',il('store',t('bizSet'))));
   [{k:'storeName',l:t('storeName')},{k:'address',l:t('addr')},{k:'phone',l:t('phone')}].forEach(function(x){
     var row=div('set-row',[div('set-lbl',x.l),sInp(x.k,x.l)]);biz.appendChild(row);
   });
   sc.appendChild(biz);
   // Happy hour
-  var hh=div('set-sec');hh.appendChild(div('set-sec-title','\uD83C\uDF89 '+t('hhSet')));
+  var hh=div('set-sec');hh.appendChild(div('set-sec-title',il('percent',t('hhSet'))));
   var hhTogRow=div('set-row',[div('',[div('set-lbl',t('hhOn')),div('set-sub','Auto-apply discount during set hours')])]);
   var hhTog=div('tbox'+(CFG.happyHourOn?' on':''));hhTog.appendChild(div('tknob'));
   hhTog.onclick=async function(){CFG.happyHourOn=!CFG.happyHourOn;hhTog.className='tbox'+(CFG.happyHourOn?' on':'');await saveCFG();render();};
@@ -42,7 +42,7 @@ function renderSett(){
   });
   hh.appendChild(catRow);sc.appendChild(hh);
   // Backup
-  var bkp=div('set-sec');bkp.appendChild(div('set-sec-title','\uD83D\uDCBE '+t('bkpSet')));
+  var bkp=div('set-sec');bkp.appendChild(div('set-sec-title',il('save',t('bkpSet'))));
   var bRow=div('set-row',[div('',[div('set-lbl',t('backupData')),div('set-sub','Download all your data as a JSON file')])]);
   var bb=btn('btn btnsm',t('backupData'),doBackup);bb.style.fontSize='11px';bRow.appendChild(bb);bkp.appendChild(bRow);
   var rRow=div('set-row',[div('',[div('set-lbl',t('restoreData')),div('set-sub','Restore from a backup file')])]);

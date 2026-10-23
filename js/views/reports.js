@@ -12,7 +12,7 @@ function renderRep(){
   fr.appendChild(btn('btn',t('alt'),function(){S.from='';S.to='';render();}));
   fr.appendChild(btn('btn',t('tdy'),function(){var d=new Date().toISOString().split('T')[0];S.from=d;S.to=d;render();}));
   sc.appendChild(fr);
-  sc.appendChild(div('dlrow',[btn('dlbtn dlcsv','\u2193 '+t('dcsv'),doCSV),btn('dlbtn dlpdf','\u2193 '+t('dpdf'),function(){doPDF();})]));
+  sc.appendChild(div('dlrow',[btn('dlbtn dlcsv',il('download',t('dcsv')),doCSV),btn('dlbtn dlpdf',il('download',t('dpdf')),function(){doPDF();})]));
   var sales=fsales();var ts=todaySales();
   var mg=div('mgrid');
   [{l:t('tr'),v:ks(ts.reduce(function(a,s){return a+s.total;},0)),ac:true},{l:t('to'),v:ts.length},{l:t('perr'),v:ks(sales.reduce(function(a,s){return a+s.total;},0)),ac:true},{l:t('pero'),v:sales.length}].forEach(function(m){mg.appendChild(div('mcard',[div('mlbl',m.l),div('mval'+(m.ac?' ac':''),String(m.v))]));});

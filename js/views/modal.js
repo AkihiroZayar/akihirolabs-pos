@@ -28,7 +28,7 @@ function renderModal(){
   // success
   if(S.modal.type==='ok'){
     var s=S.modal.sale;
-    box.appendChild(div('sucmod',[span('sucico','\u2705'),div('sucamt',ks(s.total)),div('sucsub',t('cashRec')+': '+ks(s.cashReceived)),div('suc-lbl',t('change')),div('suc-change',ks(s.change||0)),btn('btn btnpr','OK',function(){S.modal=null;render();})]));
+    box.appendChild(div('sucmod',[span('sucico',icon('checkCircle',44)),div('sucamt',ks(s.total)),div('sucsub',t('cashRec')+': '+ks(s.cashReceived)),div('suc-lbl',t('change')),div('suc-change',ks(s.change||0)),btn('btn btnpr','OK',function(){S.modal=null;render();})]));
     ov.appendChild(box);return ov;
   }
   // logout
@@ -59,7 +59,7 @@ function renderModal(){
     box.appendChild(tog);
     var bpf=field(t('pr'),'price','number');bpf.style.display=S.modal.data.hasSizes?'none':'block';box.appendChild(bpf);
     var sizeSec=div('',null,S.modal.data.hasSizes?'display:block':'display:none');var srw=div('');
-    function renderSizeRows(){srw.innerHTML='';(S.modal.data.sizes||[]).forEach(function(sz,i){var row=div('size-row');var li=inp({placeholder:t('sizeName'),value:sz.label||''});li.oninput=function(e){S.modal.data.sizes[i].label=e.target.value;};var pi=inp({type:'number',placeholder:t('sizePrice'),value:sz.price||''});pi.oninput=function(e){S.modal.data.sizes[i].price=parseInt(e.target.value)||0;};var db2=btn('size-del','\u2715',function(){S.modal.data.sizes.splice(i,1);renderSizeRows();});row.appendChild(li);row.appendChild(pi);row.appendChild(db2);srw.appendChild(row);});}
+    function renderSizeRows(){srw.innerHTML='';(S.modal.data.sizes||[]).forEach(function(sz,i){var row=div('size-row');var li=inp({placeholder:t('sizeName'),value:sz.label||''});li.oninput=function(e){S.modal.data.sizes[i].label=e.target.value;};var pi=inp({type:'number',placeholder:t('sizePrice'),value:sz.price||''});pi.oninput=function(e){S.modal.data.sizes[i].price=parseInt(e.target.value)||0;};var db2=btn('size-del',icon('x',13),function(){S.modal.data.sizes.splice(i,1);renderSizeRows();});row.appendChild(li);row.appendChild(pi);row.appendChild(db2);srw.appendChild(row);});}
     renderSizeRows();sizeSec.appendChild(srw);
     var asb=btn('size-add-btn',t('addSize'),function(){if(!S.modal.data.sizes)S.modal.data.sizes=[];S.modal.data.sizes.push({label:'',price:0});renderSizeRows();});
     sizeSec.appendChild(asb);box.appendChild(sizeSec);

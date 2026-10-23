@@ -21,7 +21,7 @@ function renderInv(){
     tr.appendChild(h('td',{},ks(p.price)));
     tr.appendChild(h('td',{style:'color:var(--accent2);font-size:11px'},p.sizes&&p.sizes.length?p.sizes.map(function(s){return s.label+'('+ks(s.price)+')';}).join(', '):'\u2014'));
     var sc2=div('stock-ctrl');
-    var dm=btn('stock-btn','\u2212',function(){adjStock(p.id,-1);});
+    var dm=btn('stock-btn',icon('minus',12),function(){adjStock(p.id,-1);});
     var sv=span('stock-val',String(p.stock));
     var dp=btn('stock-btn','+',function(){adjStock(p.id,1);});
     sc2.appendChild(dm);sc2.appendChild(sv);sc2.appendChild(dp);

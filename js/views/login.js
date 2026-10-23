@@ -22,7 +22,7 @@ function renderLogin(){
     });
     card.appendChild(list);
   }else{
-    card.appendChild(btn('backbtn','\u2190 '+t('bk'),function(){S.lstep='select';S.lpin='';render();}));
+    card.appendChild(btn('backbtn',il('back',t('bk')),function(){S.lstep='select';S.lpin='';render();}));
     card.appendChild(div('',t('epin')+' '+S.lstaff.name,'font-size:13px;color:var(--muted);margin-bottom:4px'));
     var pg=div('pingrid');
     for(var i=0;i<4;i++){

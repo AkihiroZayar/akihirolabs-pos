@@ -3,6 +3,22 @@
 All notable changes to **AkihiroLabs POS** are documented here.
 This project follows [Semantic Versioning](https://semver.org/).
 
+## [10.4.0] — 2026-10-23
+
+### Added
+- **Stock per size (variants).** Each size now has its own price, stock count and low-stock
+  alert, like Square / Shopify / Loyverse variants.
+  - Product form: each size row is *Size · Price · Stock · Alert at*.
+  - POS size picker shows how many of each size are left; sold-out sizes are greyed out.
+  - The cart can't go over the stock of a size; checkout and tabs deduct from the exact size sold.
+  - Inventory shows one −/+ row per size. Low-stock alerts are per size (e.g. "Yoma Beer (M)").
+  - A product's total stock is the sum of its sizes.
+
+### Migration
+- Existing products with sizes start every size at **0** and show a **Set counts** notice in
+  Inventory — count what you have and enter it per size (like a real POS stock count).
+  Old sales, tabs and backups keep working; restored backups are migrated the same way.
+
 ## [10.3.3] — 2026-10-23
 
 ### Fixed

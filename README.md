@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-10.7.0-1E3A8A" alt="version 10.7.0">
+  <img src="https://img.shields.io/badge/version-10.8.0-1E3A8A" alt="version 10.8.0">
   <img src="https://img.shields.io/badge/vanilla-JavaScript-00A8CC" alt="Vanilla JS">
   <img src="https://img.shields.io/badge/storage-IndexedDB-1E3A8A" alt="IndexedDB">
   <img src="https://img.shields.io/badge/lang-English%20%7C%20Burmese-00A8CC" alt="English | Burmese">
@@ -29,6 +29,7 @@
 - **Dashboard** — today's revenue and orders, top sellers, low stock and open tabs at a glance.
 - **Reports** — filter by date range, product breakdown and recent sales log.
 - **Refunds** — admins can refund a whole sale or only some items from Reports, and choose whether items go back to stock. Reports show Sales − Refunds = Net revenue.
+- **Shifts (cash drawer)** — open a shift with the starting cash, close it by counting the drawer; the app shows expected vs counted cash and the difference, with a printable shift report (PDF). Can be required before selling (Settings → Cash drawer).
 - **Export** — CSV (Excel-friendly, UTF-8) and PDF reports with Burmese script support.
 - **Backup / Restore** — download or restore all data as a JSON file.
 - **Minimal UI** — clean light theme (white, charcoal, navy) with Lucide line icons.
@@ -104,7 +105,7 @@ This project uses [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PATCH
 - The version lives in **`js/version.js`** and is shown in the app footer and PDF reports.
 - To release: bump `APP_VERSION`, update the `?v=` numbers in **`index.html`** to the same version (this makes browsers load the new files instead of cached ones), add an entry to [`CHANGELOG.md`](CHANGELOG.md), then create a GitHub Release tagged `vX.Y.Z`.
 
-Current version: **v10.7.0** — see the [changelog](CHANGELOG.md).
+Current version: **v10.8.0** — see the [changelog](CHANGELOG.md).
 
 ## Community
 

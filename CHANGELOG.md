@@ -3,6 +3,25 @@
 All notable changes to **AkihiroLabs POS** are documented here.
 This project follows [Semantic Versioning](https://semver.org/).
 
+## [10.8.0] — 2026-10-23
+
+### Added
+- **Shifts (cash drawer).** Before the first sale the cashier opens a shift and enters the
+  starting cash. A shift chip in the top bar shows it is open; tap it to close the shift.
+- **Close shift:** shows starting cash, cash sales, cash refunds and the **expected cash** in the
+  drawer. The cashier enters the counted cash and sees the difference right away
+  (Balanced / Over / Short), with an optional note.
+- **Shift report (Z-report)** after closing, with **Save PDF** (receipt-size).
+- **Reports → Shifts:** list of closed shifts with counted cash and difference; tap to reopen
+  the report.
+- **Settings → Cash drawer:** "Require an open shift to sell" (on by default).
+- Sales and refunds remember which shift they belong to; backups include shifts.
+
+### Notes
+- One shift per device — it belongs to the drawer, not to a single cashier.
+- The local database is upgraded automatically (adds a `shifts` store). If the POS is open in
+  another tab during the update, close that tab and reload.
+
 ## [10.7.0] — 2026-10-23
 
 ### Added

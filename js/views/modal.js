@@ -38,11 +38,36 @@ function renderModal(){
     box.appendChild(div('mbtns',[btn('btn',t('cn'),function(){S.modal=null;render();}),btn('btn btndg',t('lgo'),async function(){await exitTabMode();S.user=null;S.modal=null;S.lstep='select';S.cart=[];S.cashReceived=0;render();})]));
     ov.appendChild(box);return ov;
   }
+  // stock count (inventory role) — counts only, no prices
+  if(S.modal.type==='count'){
+    var C=S.modal.data;box.classList.add('count-box');
+    box.appendChild(div('mhead',[h('h3',{},C.name),btn('mclose',icon('x',18),function(){S.modal=null;render();})]));
+    function stepRow(lbl,obj){
+      var n=inp({cls:'cnum',type:'number',min:'0',inputmode:'numeric',value:String(obj.stock)});
+      n.oninput=function(e){obj.stock=Math.max(0,parseInt(e.target.value)||0);};
+      function step(d){obj.stock=Math.max(0,(parseInt(obj.stock)||0)+d);n.value=obj.stock;}
+      var al=inp({cls:'calert',type:'number',min:'0',value:String(obj.minStock||0)});al.oninput=function(e){obj.minStock=Math.max(0,parseInt(e.target.value)||0);};
+      return div('crow',[div('cl',[div('cl-n',lbl),div('cl-a',[span('',t('alertAt')+' '),al])]),div('cstep',[btn('sbtn',icon('minus',20),function(){step(-1);}),n,btn('sbtn',icon('plus',20),function(){step(1);})])]);
+    }
+    if(C.sizes)C.sizes.forEach(function(s){box.appendChild(stepRow(s.label,s));});
+    else box.appendChild(stepRow(t('st'),C));
+    box.appendChild(btn('pay-btn csave',t('saveCount'),async function(){
+      if(!canEditStock())return;
+      var orig=S.products.find(function(x){return x.id===C.id;});if(!orig)return;
+      var up=JSON.parse(JSON.stringify(orig));
+      if(hasSz(up)&&C.sizes){up.sizes.forEach(function(s){var f=C.sizes.find(function(x){return x.label===s.label;});if(f){s.stock=Math.max(0,parseInt(f.stock)||0);s.minStock=Math.max(0,parseInt(f.minStock)||0);}});syncStock(up);}
+      else{up.stock=Math.max(0,parseInt(C.stock)||0);up.minStock=Math.max(0,parseInt(C.minStock)||0);}
+      delete up.needsCount;await dbPut('products',up);S.products=await dbAll('products');S.modal=null;render();
+    }));
+    box.appendChild(div('cnote',t('countsOnly')));
+    ov.appendChild(box);return ov;
+  }
   // product / staff forms
   var isStaff=S.modal.type==='astf'||S.modal.type==='estf';
   var isEdit=S.modal.type==='eprod'||S.modal.type==='estf';
   if(!isStaff)box.classList.add('wide');
-  box.appendChild(h('h3',{},isStaff?(isEdit?t('estf'):t('nstf')):(isEdit?t('eprod'):t('nprod'))));
+  if(isStaff)box.appendChild(h('h3',{},isEdit?t('estf'):t('nstf')));
+  else box.appendChild(div('mhead',[h('h3',{},isEdit?(S.modal.data.name||t('eprod')):t('newItem')),btn('mclose',icon('x',18),function(){S.modal=null;render();})]));
   function field(lbl,key,type,ph){var f=div('field');f.appendChild(h('label',{},lbl));var i=inp({type:type||'text',value:S.modal.data[key]||'',placeholder:ph||''});i.oninput=function(e){S.modal.data[key]=e.target.value;};f.appendChild(i);return f;}
   if(isStaff){
     box.appendChild(field(t('nm'),'name','text'));box.appendChild(field(t('ini'),'initials','text'));
@@ -52,26 +77,36 @@ function renderModal(){
     var sel=h('select');['cashier','inventory','admin'].forEach(function(r){var o=h('option',{value:r},roleLabel(r));if(S.modal.data.role===r)o.selected=true;sel.appendChild(o);});
     sel.onchange=function(e){S.modal.data.role=e.target.value;};rf.appendChild(sel);box.appendChild(rf);
   }else{
-    var lock=!isAdmin(); // inventory role: counts & alert levels only
-    if(lock)box.appendChild(div('lock-note',[icon('alert',14),span('',t('invOnly'))]));
-    var nmf=field(t('nm'),'name','text'),ctf=field(t('cat'),'category','text',t('catex'));
-    if(lock){nmf.querySelector('input').disabled=true;ctf.querySelector('input').disabled=true;}
-    box.appendChild(nmf);box.appendChild(ctf);
-    var stf=field(t('st'),'stock','number');var mnf=field(t('minStkHint'),'minStock','number');
-    stf.style.display=mnf.style.display=S.modal.data.hasSizes?'none':'block';box.appendChild(stf);box.appendChild(mnf);
-    var tog=div('has-sizes-tog');var togBox=div('tbox'+(S.modal.data.hasSizes?' on':''));togBox.appendChild(div('tknob'));tog.appendChild(togBox);tog.appendChild(span('',t('hasSizes')));
-    if(lock)tog.classList.add('locked');
-    tog.onclick=function(){if(lock)return;S.modal.data.hasSizes=!S.modal.data.hasSizes;if(!S.modal.data.hasSizes)S.modal.data.sizes=[];togBox.className='tbox'+(S.modal.data.hasSizes?' on':'');sizeSec.style.display=S.modal.data.hasSizes?'block':'none';bpf.style.display=stf.style.display=mnf.style.display=S.modal.data.hasSizes?'none':'block';if(S.modal.data.hasSizes&&!(S.modal.data.sizes||[]).length){S.modal.data.sizes=[{label:'',price:0,stock:0,minStock:0}];renderSizeRows();}};
-    box.appendChild(tog);
-    var bpf=field(t('pr'),'price','number');if(lock)bpf.querySelector('input').disabled=true;bpf.style.display=S.modal.data.hasSizes?'none':'block';box.appendChild(bpf);
-    var sizeSec=div('',null,S.modal.data.hasSizes?'display:block':'display:none');sizeSec.appendChild(div('size-head',t('szHead')));var srw=div('');
-    function renderSizeRows(){srw.innerHTML='';(S.modal.data.sizes||[]).forEach(function(sz,i){var row=div('size-row');var li=inp({placeholder:t('sizeName'),value:sz.label||''});li.oninput=function(e){S.modal.data.sizes[i].label=e.target.value;};var pi=inp({type:'number',placeholder:t('sizePrice'),value:sz.price||''});pi.oninput=function(e){S.modal.data.sizes[i].price=parseInt(e.target.value)||0;};var si2=inp({type:'number',min:'0',placeholder:t('szStock'),value:sz.stock!=null?sz.stock:''});si2.oninput=function(e){S.modal.data.sizes[i].stock=Math.max(0,parseInt(e.target.value)||0);};var ai=inp({type:'number',min:'0',placeholder:t('szAlert'),value:sz.minStock||''});ai.oninput=function(e){S.modal.data.sizes[i].minStock=Math.max(0,parseInt(e.target.value)||0);};var db2=btn('size-del',icon('x',13),function(){S.modal.data.sizes.splice(i,1);renderSizeRows();});if(lock){li.disabled=pi.disabled=true;db2.style.visibility='hidden';}row.appendChild(li);row.appendChild(pi);row.appendChild(si2);row.appendChild(ai);row.appendChild(db2);srw.appendChild(row);});}
-    renderSizeRows();sizeSec.appendChild(srw);
-    var asb=btn('size-add-btn',t('addSize'),function(){if(!S.modal.data.sizes)S.modal.data.sizes=[];S.modal.data.sizes.push({label:'',price:0,stock:0,minStock:0});renderSizeRows();});
-    if(lock)asb.style.display='none';
-    sizeSec.appendChild(asb);box.appendChild(sizeSec);
+    // Admin item editor: Details · Price & sizes · Stock (real-POS style sections)
+    var D=S.modal.data;
+    function sec(title,kids){return div('fsec',[div('fsec-t',title)].concat(kids));}
+    function fld(lbl,key,type,ph){var f=div('field');f.appendChild(h('label',{},lbl));var i=inp({type:type||'text',value:D[key]!=null?D[key]:'',placeholder:ph||''});i.oninput=function(e){D[key]=e.target.value;};f.appendChild(i);return f;}
+    box.appendChild(sec(t('secDetails'),[div('fgrid',[fld(t('nm'),'name','text'),fld(t('cat'),'category','text',t('catex'))])]));
+    var tog=div('has-sizes-tog');var togBox=div('tbox'+(D.hasSizes?' on':''));togBox.appendChild(div('tknob'));tog.appendChild(togBox);tog.appendChild(span('',t('hasSizes')));
+    tog.onclick=function(){D.hasSizes=!D.hasSizes;if(D.hasSizes&&!(D.sizes||[]).length)D.sizes=[{label:'',price:D.price||0,stock:D.stock||0,minStock:D.minStock||0}];if(!D.hasSizes)D.sizes=[];render();};
+    var pk=[tog];
+    var sumBox=div('stock-sum');
+    function updSum(){sumBox.innerHTML='';var tot=(D.sizes||[]).reduce(function(a,s){return a+(parseInt(s.stock)||0);},0);
+      var lows=(D.sizes||[]).filter(function(s){var st=parseInt(s.stock)||0,m=parseInt(s.minStock)||0;return s.label&&(st<=0||(m>0&&st<=m));}).map(function(s){return s.label;});
+      sumBox.appendChild(div('sum-row',[span('',t('totalStock')),h('b',{},String(tot))]));
+      if(lows.length)sumBox.appendChild(div('sum-row lo',[span('',t('lowSizes')),h('b',{},lows.join(', '))]));}
+    if(D.hasSizes){
+      pk.push(div('size-row size-hrow',[span('',t('sizeName')),span('',t('sizePrice')),span('',t('szStock')),span('',t('szAlert')),span('','')]));
+      (D.sizes||[]).forEach(function(sz,i){
+        function num(key,ph){var x=inp({type:'number',min:'0',placeholder:ph,value:sz[key]!=null&&sz[key]!==''?sz[key]:''});x.oninput=function(e){D.sizes[i][key]=e.target.value;updSum();};return x;}
+        var li=inp({placeholder:t('sizeName'),value:sz.label||''});li.oninput=function(e){D.sizes[i].label=e.target.value;updSum();};
+        pk.push(div('size-row',[li,num('price',t('sizePrice')),num('stock',t('szStock')),num('minStock',t('szAlert')),btn('size-del',icon('x',13),function(){D.sizes.splice(i,1);if(!D.sizes.length)D.hasSizes=false;render();})]));
+      });
+      pk.push(btn('size-add-btn',t('addSize'),function(){D.sizes.push({label:'',price:'',stock:0,minStock:0});render();}));
+      box.appendChild(sec(t('secPrice'),pk));
+      updSum();box.appendChild(sec(t('secStock'),[sumBox]));
+    }else{
+      pk.push(fld(t('pr'),'price','number'));
+      box.appendChild(sec(t('secPrice'),pk));
+      box.appendChild(sec(t('secStock'),[div('fgrid',[fld(t('st'),'stock','number'),fld(t('minStkHint'),'minStock','number')])]));
+    }
   }
-  var btns=div('mbtns',[btn('btn',t('cn'),function(){S.modal=null;render();})]);
+  var btns=div('mbtns mbtns-split');var rightB=div('mbtns-r',[btn('btn',t('cn'),function(){S.modal=null;render();})]);
   if(isEdit&&isAdmin()){btns.appendChild(btn('btn btndg',t('dl'),async function(){
     var d0=S.modal.data;
     if(isStaff){
@@ -86,7 +121,8 @@ function renderModal(){
       S.cart=S.cart.filter(function(i){return i.prodId!==d0.id;});
     }
     S.modal=null;render();}));}
-  btns.appendChild(btn('btn btnpr',t('sv'),async function(){
+  btns.appendChild(rightB);
+  rightB.appendChild(btn('btn btnpr',t('sv'),async function(){
     var d=S.modal.data;
     if(isStaff){
       d.name=(d.name||'').trim();if(!d.name){alert(t('needName'));return;}
@@ -98,12 +134,7 @@ function renderModal(){
       if(item.id)await dbPut('staff',item);else await dbAdd('staff',item);S.staff=await dbAll('staff');
       if(S.user&&item.id===S.user.id){S.user=S.staff.find(function(x){return x.id===item.id;})||S.user;if(allowedViews().indexOf(S.view)<0)S.view=allowedViews()[0];}
     }else if(!isAdmin()){
-      // Inventory role: only stock counts and alert levels are taken from the form.
-      var orig=S.products.find(function(x){return x.id===d.id;});if(!orig||!canEditStock())return;
-      var up=JSON.parse(JSON.stringify(orig));
-      if(hasSz(up)){up.sizes.forEach(function(s){var f=(d.sizes||[]).find(function(x){return x.label===s.label;});if(f){s.stock=Math.max(0,parseInt(f.stock)||0);s.minStock=Math.max(0,parseInt(f.minStock)||0);}});syncStock(up);}
-      else{up.stock=Math.max(0,parseInt(d.stock)||0);up.minStock=Math.max(0,parseInt(d.minStock)||0);}
-      delete up.needsCount;await dbPut('products',up);S.products=await dbAll('products');
+      return;
     }else{
       d.name=(d.name||'').trim();if(!d.name){alert(t('needName'));return;}
       d.category=(d.category||'').trim()||'Other';

@@ -21,7 +21,7 @@ function renderDash(){
   var mg=div('dash-grid');
   [{icon:'wallet',lbl:t('tr'),val:ks(todayRev),cls:'ac'},{icon:'receipt',lbl:t('to'),val:ts.length},
    {icon:'clipboard',lbl:t('openTabs'),val:openTabsN,click:function(){S.view='tabs';render();}},
-   {icon:'alert',lbl:t('lowStock'),val:lowN,cls:lowN>0?'warn':'',click:function(){S.view='inv';render();}}
+   {icon:'alert',lbl:t('lowStock'),val:lowN,cls:lowN>0?'warn':'',click:function(){S.invFilter='low';S.view='inv';render();}}
   ].forEach(function(m){
     var c=div('dash-card'+(m.click?' click':''),[span('dash-icon',icon(m.icon,18)),div('dash-lbl',m.lbl),div('dash-val'+(m.cls?' '+m.cls:''),String(m.val))]);
     if(m.click)c.onclick=m.click;mg.appendChild(c);

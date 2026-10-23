@@ -14,7 +14,7 @@ async function doRestore(file){
     var text=await file.text();var data=JSON.parse(text);
     if(!data||typeof data!=='object'||!(data.products||data.sales||data.staff||data.settings)){alert(t('rsBad'));return;}
     if(!confirm(t('cfRestore')))return;
-    if(data.products){for(var i=0;i<S.products.length;i++)await dbDel('products',S.products[i].id);for(var i=0;i<data.products.length;i++){var p=Object.assign({},data.products[i]);delete p.id;await dbAdd('products',p);}S.products=await dbAll('products');}
+    if(data.products){for(var i=0;i<S.products.length;i++)await dbDel('products',S.products[i].id);for(var i=0;i<data.products.length;i++){var p=Object.assign({},data.products[i]);delete p.id;await dbAdd('products',p);}S.products=await dbAll('products');await migrateSizes();}
     if(data.sales){for(var i=0;i<S.sales.length;i++)await dbDel('sales',S.sales[i].id);for(var i=0;i<data.sales.length;i++){var s=Object.assign({},data.sales[i]);delete s.id;await dbAdd('sales',s);}S.sales=await dbAll('sales');}
     if(data.staff){for(var i=0;i<S.staff.length;i++)await dbDel('staff',S.staff[i].id);for(var i=0;i<data.staff.length;i++){var sf=Object.assign({},data.staff[i]);delete sf.id;await dbAdd('staff',sf);}S.staff=await dbAll('staff');}
     if(data.tabs){var curTabs=await dbAll('tabs');for(var i=0;i<curTabs.length;i++)await dbDel('tabs',curTabs[i].id);for(var i=0;i<data.tabs.length;i++){var tb=Object.assign({},data.tabs[i]);delete tb.id;await dbAdd('tabs',tb);}}

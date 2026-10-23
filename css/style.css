@@ -355,3 +355,22 @@ input[type=date]::-webkit-calendar-picker-indicator{opacity:.5}
 .csave{margin-top:16px}
 .cnote{text-align:center;font-size:11px;color:var(--muted);margin-top:4px}
 @media (max-width:520px){.fgrid{grid-template-columns:1fr}.size-row{grid-template-columns:1fr 1fr 1fr 1fr 28px}}
+/* refunds (v10.7) */
+.mgrid{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+.mval.neg{color:var(--danger)}
+.samt-box{display:flex;flex-direction:column;align-items:flex-end}
+.samt.struck{text-decoration:line-through;color:var(--muted);font-weight:500;font-size:11px}
+.sfoot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:6px}
+.rfbtn{margin-left:auto;padding:4px 10px;font-size:11px}
+.scard.refunded{opacity:.65}
+.rline{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--danger);margin-top:6px;padding-top:6px;border-top:1px dashed var(--border)}
+.rline span{flex:1;color:var(--muted)}
+.rf-meta{text-align:left;margin:-6px 0 8px}
+.rf-nm{font-size:13px;font-weight:600}
+.sbtn.sm{width:38px;height:38px}
+.rf-q{min-width:28px;text-align:center;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
+.rf-all{margin-top:10px}
+.rf-ck{display:flex;align-items:center;gap:6px;font-size:12px;margin:12px 0 6px;cursor:pointer}
+.rf-tot{display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-top:1px solid var(--border);margin-top:6px}
+.rf-go{background:var(--danger);margin-top:6px}
+.rf-go:hover{background:#991B1B}

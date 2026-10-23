@@ -3,6 +3,23 @@
 All notable changes to **AkihiroLabs POS** are documented here.
 This project follows [Semantic Versioning](https://semver.org/).
 
+## [10.6.0] — 2026-10-23
+
+### Changed
+- **Items screen (Admin / Cashier)** redesigned in a real-POS style: a simple two-line list
+  (name · category · sizes on the left, price and stock on the right) with a colored stock dot,
+  search, category chips and **Low / Out** filters. Tap an item to edit it (admins only).
+- **Item editor** split into three sections: *Details*, *Price & sizes*, *Stock*, with a close
+  button and Delete on the left.
+- **Stock screen (Inventory role)**: a count list showing stock per size; tapping an item opens a
+  count sheet with big −/+ buttons and a "Save count" button. No prices are shown.
+- Nav label is now **Items** for admins/cashiers and **Stock** for inventory staff.
+- The dashboard Low Stock card opens the Items list filtered to low stock.
+
+### Fixed
+- **Updates not showing:** CSS/JS links in `index.html` now carry `?v=<version>`, so browsers
+  load the new files after every release instead of old cached copies.
+
 ## [10.5.0] — 2026-10-23
 
 ### Added

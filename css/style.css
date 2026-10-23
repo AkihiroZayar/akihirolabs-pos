@@ -279,3 +279,16 @@ input[type=date]::-webkit-calendar-picker-indicator{opacity:.5}
 .discord-link:hover{text-decoration:underline}
 .dash-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
 @media (max-width:700px){.dash-cols{grid-template-columns:1fr}}
+.mbox.wide{width:480px}
+.size-head{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;font-weight:600;margin-bottom:6px}
+.size-row input{min-width:0}
+.size-btn-stock{display:block;font-size:11px;color:var(--muted);margin-top:4px}
+.size-btn-stock.lo{color:var(--warning)}
+.size-btn-stock.no{color:var(--danger)}
+.size-btn.off{opacity:.45;cursor:not-allowed}
+.size-btn.off:hover{border-color:var(--border);background:var(--card)}
+.stock-sizes{display:flex;flex-direction:column;gap:4px}
+.stock-sz{font-size:11px;color:var(--muted);min-width:34px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dtable td{vertical-align:middle}
+.bcount{background:var(--tint);color:var(--accent);margin-top:4px}
+.count-banner{display:flex;align-items:center;gap:8px;padding:10px 12px;margin-bottom:12px;border:1px solid rgba(30,58,138,.25);background:var(--tint);color:var(--accent);border-radius:var(--r);font-size:12px}

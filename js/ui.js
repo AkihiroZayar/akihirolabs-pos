@@ -43,7 +43,8 @@ var ICONS={
   del:'<path d="M10 5a2 2 0 0 0-1.344.519l-6.328 5.74a1 1 0 0 0 0 1.481l6.328 5.741A2 2 0 0 0 10 19h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2z"/><path d="m12 9 6 6"/><path d="m18 9-6 6"/>',
   back:'<path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>',
   download:'<path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/>',
-  chat:'<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>'
+  chat:'<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
+  chev:'<path d="m9 18 6-6-6-6"/>'
 };
 // icon('check',14) → <svg class="ico">. Pass extra class as 3rd arg.
 function icon(name,size,cls){
@@ -64,6 +65,7 @@ function allowedViews(){return ROLE_VIEWS[role()]||ROLE_VIEWS.cashier;}
 function isAdmin(){return role()==='admin';}
 function canEditStock(){return role()==='admin'||role()==='inventory';}
 function roleLabel(r){return t(r==='admin'?'adm':r==='inventory'?'invRole':'cas');}
+function navLabel(v){return v==='inv'?(role()==='inventory'?t('stockNav'):t('items')):t(v);}
 function roleBadge(r){return r==='admin'?'badm':r==='inventory'?'binv':'bcas';}
 
 // ── Topbar ──────────────────────────────────────────────────
@@ -75,7 +77,7 @@ function mkTopbar(){
   ['en','my'].forEach(function(l){lt.appendChild(btn('langb'+(lang===l?' on':''),l==='en'?'EN':'\u1019\u103c\u1014\u103a\u1019\u102c',function(){setLang(l);}));});
   tb.appendChild(lt);
   var tabs=allowedViews();
-  tabs.forEach(function(v){tb.appendChild(btn('nb'+(S.view===v?' on':''),t(v),async function(){if(S.tabMode&&(v!=='pos'||S.view==='pos'))await exitTabMode();S.view=v;render();}));});
+  tabs.forEach(function(v){tb.appendChild(btn('nb'+(S.view===v?' on':''),navLabel(v),async function(){if(S.tabMode&&(v!=='pos'||S.view==='pos'))await exitTabMode();S.view=v;render();}));});
   var chip=div('uchip',[div('udot'),span('',S.user?S.user.name:'')]);
   chip.onclick=function(){S.modal={type:'lgo'};render();};
   tb.appendChild(chip);

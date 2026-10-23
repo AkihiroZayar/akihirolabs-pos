@@ -4,7 +4,7 @@
  * https://github.com/AkihiroZayar/POS-SYTEM
  */
 // ── State ───────────────────────────────────────────────────
-var S={busy:false,products:[],sales:[],staff:[],tabs:[],cart:[],search:'',cat:'All',cashReceived:0,user:null,lstep:'select',lstaff:null,lpin:'',view:'dash',modal:null,from:'',to:'',tabMode:false,editingTab:null};
+var S={busy:false,invQ:'',invCat:'All',invFilter:'all',products:[],sales:[],staff:[],tabs:[],cart:[],search:'',cat:'All',cashReceived:0,user:null,lstep:'select',lstaff:null,lpin:'',view:'dash',modal:null,from:'',to:'',tabMode:false,editingTab:null};
 
 // ── Seed ────────────────────────────────────────────────────
 async function seed(){

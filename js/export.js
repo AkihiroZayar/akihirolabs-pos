@@ -5,7 +5,7 @@
  */
 // ── Backup / Restore ────────────────────────────────────────
 function doBackup(){
-  var data={products:S.products,sales:S.sales,staff:S.staff,tabs:S.tabs,settings:CFG,exportedAt:new Date().toISOString()};
+  var data={products:S.products,sales:S.sales,staff:S.staff,tabs:S.tabs,shifts:S.shifts,settings:CFG,exportedAt:new Date().toISOString()};
   var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='pos_backup_'+ymd()+'.json';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
 }
@@ -18,6 +18,8 @@ async function doRestore(file){
     if(data.sales){for(var i=0;i<S.sales.length;i++)await dbDel('sales',S.sales[i].id);for(var i=0;i<data.sales.length;i++){var s=Object.assign({},data.sales[i]);delete s.id;await dbAdd('sales',s);}S.sales=await dbAll('sales');}
     if(data.staff){for(var i=0;i<S.staff.length;i++)await dbDel('staff',S.staff[i].id);for(var i=0;i<data.staff.length;i++){var sf=Object.assign({},data.staff[i]);delete sf.id;await dbAdd('staff',sf);}S.staff=await dbAll('staff');}
     if(data.tabs){var curTabs=await dbAll('tabs');for(var i=0;i<curTabs.length;i++)await dbDel('tabs',curTabs[i].id);for(var i=0;i<data.tabs.length;i++){var tb=Object.assign({},data.tabs[i]);delete tb.id;await dbAdd('tabs',tb);}}
+    if(data.shifts){var curSh=await dbAll('shifts');for(var i=0;i<curSh.length;i++)await dbDel('shifts',curSh[i].id);for(var i=0;i<data.shifts.length;i++){await dbPut('shifts',data.shifts[i]);}}
+    S.shifts=await dbAll('shifts');
     if(data.settings){var st=Object.assign({},data.settings);delete st.id;CFG=Object.assign({},DEF_CFG,st);await saveCFG();}
     S.tabs=await dbAll('tabs');
     // Staff IDs/PINs may have changed: sign out so everyone logs in with the restored accounts.
@@ -62,4 +64,28 @@ async function doPDF(){
     if(document.body.contains(ld))document.body.removeChild(ld);
     alert('PDF failed: '+err.message);
   }
+}
+
+// ── Shift report PDF (Z-report) ─────────────────────────────
+async function doShiftPDF(sh){
+  function r(l,v,b){return '<tr><td style="padding:7px 0;color:#6B7280;">'+l+'</td><td style="padding:7px 0;text-align:right;'+(b?'font-weight:700;color:#1F2937;':'')+'">'+v+'</td></tr>';}
+  var d=sh.difference||0;var dc=d===0?'#15803D':(d>0?'#B45309':'#B91C1C');
+  var wrap=document.createElement('div');
+  wrap.style.cssText='position:fixed;top:-99999px;left:-99999px;width:420px;background:#fff;color:#1F2937;font-family:"Noto Sans Myanmar",-apple-system,sans-serif;font-size:13px;line-height:1.5;';
+  wrap.innerHTML='<div style="padding:28px 30px;"><div style="font-size:20px;font-weight:800;color:#1E3A8A;">'+esc(CFG.storeName||'POS')+'</div><div style="font-size:12px;color:#6B7280;margin-bottom:14px;padding-bottom:12px;border-bottom:2px solid #1E3A8A;">Shift report #'+sh.id+'</div><table style="width:100%;border-collapse:collapse;font-size:12px;">'
+    +r('Opened',esc(new Date(sh.openedAt).toLocaleString()+' · '+(sh.openedBy||'')))+r('Closed',esc(new Date(sh.closedAt).toLocaleString()+' · '+(sh.closedBy||'')))+r('Orders',sh.orders)
+    +'<tr><td colspan="2" style="border-top:1px solid #E5E7EB;"></td></tr>'
+    +r('Starting cash',ks(sh.openingCash||0))+r('+ Cash sales',ks(sh.cashSales))+r('− Cash refunds',ks(sh.cashRefunds))+r('Expected in drawer',ks(sh.expected),1)+r('Counted cash',ks(sh.countedCash),1)
+    +'<tr><td style="padding:9px 0;font-weight:700;">Difference</td><td style="padding:9px 0;text-align:right;font-weight:800;color:'+dc+';">'+(d>0?'+':d<0?'−':'')+ks(Math.abs(d))+'</td></tr></table>'
+    +(sh.note?'<div style="margin-top:10px;font-size:11px;color:#6B7280;">Note: '+esc(sh.note)+'</div>':'')
+    +'<div style="margin-top:18px;font-size:10px;color:#9CA3AF;text-align:center;">AkihiroLabs POS v'+APP_VERSION+'</div></div>';
+  document.body.appendChild(wrap);
+  try{
+    await document.fonts.ready;
+    var canvas=await html2canvas(wrap,{scale:2,backgroundColor:'#ffffff',logging:false});
+    var jsPDF=window.jspdf.jsPDF;var w=80,hgt=canvas.height/canvas.width*w;
+    var pdf=new jsPDF({orientation:'portrait',unit:'mm',format:[w,hgt]});
+    pdf.addImage(canvas.toDataURL('image/jpeg',0.92),'JPEG',0,0,w,hgt);pdf.save('shift_'+sh.id+'_'+ymd(new Date(sh.closedAt))+'.pdf');
+  }catch(err){alert('PDF failed: '+err.message);}
+  finally{if(document.body.contains(wrap))document.body.removeChild(wrap);}
 }

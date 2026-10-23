@@ -78,9 +78,27 @@ function mkTopbar(){
   tb.appendChild(lt);
   var tabs=allowedViews();
   tabs.forEach(function(v){tb.appendChild(btn('nb'+(S.view===v?' on':''),navLabel(v),async function(){if(S.tabMode&&(v!=='pos'||S.view==='pos'))await exitTabMode();S.view=v;render();}));});
+  if(role()==='admin'||role()==='cashier'){var osh=openShiftRec();
+    var sc=btn('nb shiftchip'+(osh?' open':''),osh?il('wallet',t('shiftOpenSince',{t:hm(osh.openedAt)}),12):il('wallet',t('openShift'),12),function(){S.modal={type:osh?'closeShift':'openShift',data:{}};render();});
+    tb.appendChild(sc);}
   var chip=div('uchip',[div('udot'),span('',S.user?S.user.name:'')]);
   chip.onclick=function(){S.modal={type:'lgo'};render();};
   tb.appendChild(chip);
   return tb;
 }
 function mkFooter(){return div('footer',[span('',['Developed by ',h('b',{},'AkihiroLabs'),' \xb7 POS System v'+APP_VERSION]),h('a',{cls:'discord-link',href:DISCORD_URL,target:'_blank',rel:'noopener'},il('chat','Join our Discord',12))]);}
+
+// Shift summary rows (used by close-shift, shift report and Reports)
+function shiftRows(sh,st){
+  function row(l,v,cls){return div('sum-row'+(cls?' '+cls:''),[span('',l),h('b',{},v)]);}
+  var r=[row(t('openedAt'),new Date(sh.openedAt).toLocaleString()+(sh.openedBy?' \xb7 '+sh.openedBy:''))];
+  if(sh.closedAt)r.push(row(t('closedAt'),new Date(sh.closedAt).toLocaleString()+(sh.closedBy?' \xb7 '+sh.closedBy:'')));
+  r.push(row(t('ordersN'),String(st.orders)));
+  r.push(row(t('startCash'),ks(sh.openingCash||0)));
+  r.push(row('+ '+t('cashSales'),ks(st.cashSales)));
+  r.push(row('− '+t('cashRefunds'),ks(st.cashRefunds)));
+  r.push(row(t('expected'),ks(st.expected),'strong'));
+  return div('stock-sum shift-sum',r);
+}
+function diffLabel(d){return d===0?t('balanced'):(d>0?t('over')+' +'+ks(d):t('shortBy')+' −'+ks(-d));}
+function diffCls(d){return d===0?'bok':(d>0?'blow':'bout');}

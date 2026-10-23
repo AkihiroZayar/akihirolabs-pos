@@ -4,7 +4,7 @@
  * https://github.com/AkihiroZayar/POS-SYTEM
  */
 // ── State ───────────────────────────────────────────────────
-var S={busy:false,invQ:'',invCat:'All',invFilter:'all',products:[],sales:[],staff:[],tabs:[],cart:[],search:'',cat:'All',cashReceived:0,user:null,lstep:'select',lstaff:null,lpin:'',view:'dash',modal:null,from:'',to:'',tabMode:false,editingTab:null};
+var S={busy:false,shifts:[],invQ:'',invCat:'All',invFilter:'all',products:[],sales:[],staff:[],tabs:[],cart:[],search:'',cat:'All',cashReceived:0,user:null,lstep:'select',lstaff:null,lpin:'',view:'dash',modal:null,from:'',to:'',tabMode:false,editingTab:null};
 
 // ── Seed ────────────────────────────────────────────────────
 async function seed(){
@@ -45,6 +45,7 @@ async function seed(){
   }
   S.sales=await dbAll('sales');
   S.tabs=await dbAll('tabs');
+  S.shifts=await dbAll('shifts');
 }
 
 // ── Sizes (variants) ────────────────────────────────────────
@@ -108,12 +109,39 @@ async function refundSale(saleId,lines,restock){
   S.busy=true;
   try{
     var amount=items.reduce(function(a,i){return a+i.price*i.qty;},0);
-    s.refunds=(s.refunds||[]).concat([{time:new Date().toISOString(),staffId:S.user?S.user.id:null,staffName:S.user?S.user.name:'',items:items,amount:amount,restock:!!restock}]);
+    s.refunds=(s.refunds||[]).concat([{time:new Date().toISOString(),staffId:S.user?S.user.id:null,staffName:S.user?S.user.name:'',items:items,amount:amount,restock:!!restock,shiftId:curShiftId()}]);
     await dbPut('sales',s);
     if(restock)await returnStock(items);
     S.sales=await dbAll('sales');S.products=await dbAll('products');
   }finally{S.busy=false;}
   return true;
+}
+
+// ── Shifts (cash drawer) ────────────────────────────────────
+// One open shift per device (it belongs to the drawer, not to a cashier). All payments are cash, so
+// expected cash = starting cash + cash sales in the shift − refunds paid during the shift.
+function openShiftRec(){return (S.shifts||[]).find(function(x){return x.status==='open';})||null;}
+function curShiftId(){var o=openShiftRec();return o?o.id:null;}
+function shiftNeeded(){return CFG.requireShift!==false&&!openShiftRec();}
+function shiftStats(sh){
+  var sales=S.sales.filter(function(s){return s.shiftId===sh.id;});
+  var cashSales=sales.reduce(function(a,s){return a+s.total;},0);
+  var cashRefunds=sumRefunds(allRefunds().filter(function(r){return r.shiftId===sh.id;}));
+  var expected=(sh.openingCash||0)+cashSales-cashRefunds;
+  return{orders:sales.length,cashSales:cashSales,cashRefunds:cashRefunds,expected:expected};
+}
+async function startShift(amount){
+  if(openShiftRec())return;
+  await dbAdd('shifts',{status:'open',openedAt:new Date().toISOString(),openedBy:S.user?S.user.name:'',openingCash:Math.max(0,parseInt(amount)||0)});
+  S.shifts=await dbAll('shifts');
+}
+async function endShift(counted,note){
+  var sh=openShiftRec();if(!sh)return null;
+  var st=shiftStats(sh);
+  var done=Object.assign({},sh,st,{status:'closed',closedAt:new Date().toISOString(),closedBy:S.user?S.user.name:'',countedCash:Math.max(0,parseInt(counted)||0),note:note||''});
+  done.difference=done.countedCash-done.expected;
+  await dbPut('shifts',done);S.shifts=await dbAll('shifts');
+  return S.shifts.find(function(x){return x.id===done.id;});
 }
 
 // ── Cart ────────────────────────────────────────────────────
@@ -138,7 +166,7 @@ async function checkout(){
   if(S.busy||!S.cart.length)return;
   var total=cartTotal();var change=S.cashReceived-total;if(change<0)return;
   S.busy=true;try{
-  var sale={items:S.cart.map(function(i){return{name:i.name,price:i.price,qty:i.qty,prodId:i.prodId,size:i.size||null};}),total:total,cashReceived:S.cashReceived,change:change,method:'Cash',time:new Date().toISOString(),staffId:S.user?S.user.id:null,staffName:S.user?S.user.name:''};
+  var sale={items:S.cart.map(function(i){return{name:i.name,price:i.price,qty:i.qty,prodId:i.prodId,size:i.size||null};}),total:total,cashReceived:S.cashReceived,change:change,method:'Cash',time:new Date().toISOString(),staffId:S.user?S.user.id:null,staffName:S.user?S.user.name:'',shiftId:curShiftId()};
   await dbAdd('sales',sale);
   await deductStock(S.cart);
   S.sales=await dbAll('sales');S.products=await dbAll('products');S.modal={type:'ok',sale:sale};S.cart=[];S.cashReceived=0;
@@ -168,7 +196,7 @@ async function chargeTab(){
   if(S.busy||!S.editingTab||!S.cart.length)return;
   var total=cartTotal();var change=S.cashReceived-total;if(change<0)return;
   S.busy=true;try{
-  var sale={items:S.cart.map(function(i){return{name:i.name,price:i.price,qty:i.qty,prodId:i.prodId,size:i.size||null};}),total:total,cashReceived:S.cashReceived,change:change,method:'Cash',time:new Date().toISOString(),staffId:S.user?S.user.id:null,staffName:S.user?S.user.name:'',tabName:S.editingTab.name};
+  var sale={items:S.cart.map(function(i){return{name:i.name,price:i.price,qty:i.qty,prodId:i.prodId,size:i.size||null};}),total:total,cashReceived:S.cashReceived,change:change,method:'Cash',time:new Date().toISOString(),staffId:S.user?S.user.id:null,staffName:S.user?S.user.name:'',tabName:S.editingTab.name,shiftId:curShiftId()};
   await dbAdd('sales',sale);
   if(S.editingTab.id)await dbDel('tabs',S.editingTab.id);
   await deductStock(S.cart);

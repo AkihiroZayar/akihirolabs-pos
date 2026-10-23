@@ -4,18 +4,19 @@
  * https://github.com/AkihiroZayar/POS-SYTEM
  */
 // ── DB ─────────────────────────────────────────────────────
-const DBN='pos_bar_v3',DBV=1;
+const DBN='pos_bar_v3',DBV=2; // v2 adds 'shifts'
 let db;
 function openDB(){
   return new Promise(function(res,rej){
     var r=indexedDB.open(DBN,DBV);
     r.onupgradeneeded=function(e){
       var d=e.target.result;
-      ['products','sales','staff','tabs','settings'].forEach(function(s){
+      ['products','sales','staff','tabs','settings','shifts'].forEach(function(s){
         if(!d.objectStoreNames.contains(s))d.createObjectStore(s,{keyPath:'id',autoIncrement:true});
       });
     };
-    r.onsuccess=function(e){db=e.target.result;res();};
+    r.onsuccess=function(e){db=e.target.result;db.onversionchange=function(){db.close();location.reload();};res();};
+    r.onblocked=function(){alert('Please close other tabs of this POS to finish updating, then reload.');};
     r.onerror=rej;
   });
 }
@@ -25,7 +26,7 @@ function dbDel(s,id){return new Promise(function(r){db.transaction(s,'readwrite'
 function dbAdd(s,v){return new Promise(function(r){db.transaction(s,'readwrite').objectStore(s).add(v).onsuccess=function(e){r(e.target.result);};});}
 
 // ── Settings ────────────────────────────────────────────────
-var DEF_CFG={storeName:'',address:'',phone:'',happyHourOn:false,happyHourStart:'17:00',happyHourEnd:'23:00',happyHourDiscount:10,happyHourCats:['Drinks']};
+var DEF_CFG={storeName:'',address:'',phone:'',happyHourOn:false,happyHourStart:'17:00',happyHourEnd:'23:00',happyHourDiscount:10,happyHourCats:['Drinks'],requireShift:true};
 var CFG=JSON.parse(JSON.stringify(DEF_CFG));
 async function loadCFG(){var a=await dbAll('settings');if(a.length){var d=a[0];delete d.id;CFG=Object.assign({},DEF_CFG,d);}}
 async function saveCFG(){var a=await dbAll('settings');var obj=Object.assign({},CFG);if(a.length){obj.id=a[0].id;await dbPut('settings',obj);}else{await dbAdd('settings',obj);}}

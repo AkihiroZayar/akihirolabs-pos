@@ -22,7 +22,15 @@ var TR={
     backupData:'Backup JSON',restoreData:'Restore JSON',
     storeName:'Store name',addr:'Address',phone:'Phone',
     hhOn:'Happy hour',hhDiscount:'Discount %',hhStart:'Start time',hhEnd:'End time',hhCats:'Apply to',
-    bizSet:'Business',hhSet:'Happy Hour',bkpSet:'Backup & Restore'},
+    bizSet:'Business',hhSet:'Happy Hour',bkpSet:'Backup & Restore',
+    hhActive:'Happy hour is on',untilT:'Until {t}',allOk:'All stock OK',left:'{n} left',edit:'Edit',status:'Status',
+    opened:'Opened: {t}',empty:'Empty',cash:'Cash',enterCash:'Enter cash amount',posSub:'Point of Sale',ok:'OK',
+    hhSub:'Auto-apply discount during set hours',bkSub:'Download all your data as a JSON file',rsSub:'Restore from a backup file',
+    minStkHint:'Min stock (alert at this level)',tabPh:'e.g. Table 3, John…',
+    cfDelProd:'Delete "{n}"? This cannot be undone.',cfDelStaff:'Delete staff "{n}"? This cannot be undone.',cfDelTab:'Delete tab "{n}"? Its items will be lost.',
+    cfRestore:'Restore will REPLACE all current data (products, sales, staff, tabs, settings). Continue?',
+    rsOk:'Restore complete. Please log in again.',rsFail:'Restore failed: ',rsBad:'This is not a valid POS backup file.',
+    pinBad:'PIN must be exactly 4 digits.',lastAdm:'Keep at least one admin.',selfDel:'You cannot delete the account you are logged in with.',needName:'Please enter a name.'},
   my:{app:'POS စနစ်',dash:'ပင်မစာမျက်နှာ',pos:'ရောင်းချမှု',tabs:'အကြွေးစာရင်း',inv:'ကုန်ပစ္စည်း',rep:'အစီရင်ခံစာ',stf:'ဝန်ထမ်း',sett:'ဆက်တင်',
     srch:'ကုန်ပစ္စည်းရှာ…',cart:'ခြင်းတောင်း',clr:'ဖျက်',emp:'ကုန်ပစ္စည်းထည့်ရန် နှိပ်ပါ',
     sub:'စုစုပေါင်း',tot:'ကျသင့်ငွေ',ins:'လက်ကျန်:{n}',low:'{n} ခုသာ ကျန်',oos:'ပစ္စည်းပြတ်',
@@ -40,12 +48,27 @@ var TR={
     backupData:'Backup',restoreData:'Restore',
     storeName:'ဆိုင်အမည်',addr:'လိပ်စာ',phone:'ဖုန်း',
     hhOn:'Happy Hour',hhDiscount:'လျှော့ %',hhStart:'စတင်',hhEnd:'ကုန်',hhCats:'အမျိုးအစား',
-    bizSet:'ဆိုင်',hhSet:'Happy Hour',bkpSet:'Backup & Restore'}
+    bizSet:'ဆိုင်',hhSet:'Happy Hour',bkpSet:'Backup & Restore',
+    hhActive:'Happy Hour ဖွင့်ထားသည်',untilT:'{t} အထိ',allOk:'လက်ကျန် အားလုံး လုံလောက်သည်',left:'{n} ခု ကျန်',edit:'ပြင်',status:'အခြေအနေ',
+    opened:'ဖွင့်ချိန်: {t}',empty:'ဗလာ',cash:'ငွေသား',enterCash:'လက်ခံငွေ ထည့်ပါ',posSub:'အရောင်းစနစ်',ok:'OK',
+    hhSub:'သတ်မှတ်ချိန်အတွင်း လျှော့ဈေး အလိုအလျောက် သုံးမည်',bkSub:'ဒေတာအားလုံးကို JSON ဖိုင်အဖြစ် ဒေါင်းလုဒ်လုပ်မည်',rsSub:'Backup ဖိုင်မှ ပြန်ယူမည်',
+    minStkHint:'အနည်းဆုံး လက်ကျန် (သတိပေးရန်)',tabPh:'ဥပမာ - စားပွဲ ၃',
+    cfDelProd:'"{n}" ကို ဖျက်မလား? ပြန်ယူ၍ မရပါ။',cfDelStaff:'ဝန်ထမ်း "{n}" ကို ဖျက်မလား? ပြန်ယူ၍ မရပါ။',cfDelTab:'"{n}" အကြွေးကို ဖျက်မလား? ပစ္စည်းများ ပျောက်ပါမည်။',
+    cfRestore:'လက်ရှိ ဒေတာအားလုံးကို အစားထိုးပါမည်။ ဆက်လုပ်မလား?',
+    rsOk:'ပြန်ယူပြီးပါပြီ။ ပြန်လည် ဝင်ရောက်ပါ။',rsFail:'ပြန်ယူ၍ မရပါ: ',rsBad:'မှန်ကန်သော Backup ဖိုင် မဟုတ်ပါ။',
+    pinBad:'PIN သည် ဂဏန်း ၄ လုံး ဖြစ်ရမည်။',lastAdm:'မန်နေဂျာ အနည်းဆုံး တစ်ယောက် ထားရမည်။',selfDel:'လက်ရှိ ဝင်ထားသော အကောင့်ကို ဖျက်၍ မရပါ။',needName:'အမည် ထည့်ပါ။'}
 };
 var lang='en';
+try{var _sl=localStorage.getItem('pos_lang');if(_sl==='en'||_sl==='my')lang=_sl;}catch(e){}
+function setLang(l){lang=l;try{localStorage.setItem('pos_lang',l);}catch(e){}render();}
 function t(k,v){
   var s=(TR[lang][k]||TR.en[k]||k);
   if(v)Object.keys(v).forEach(function(x){s=s.replace('{'+x+'}',v[x]);});
   return s;
 }
-function ks(n){return n.toLocaleString()+' Ks';}
+function ks(n){return (Number(n)||0).toLocaleString()+' Ks';}
+// Local-time helpers (avoid UTC date shifts)
+function ymd(d){d=d||new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function parseYmd(s){var p=String(s).split('-');return new Date(+p[0],(+p[1])-1,+p[2]);}
+function hm(d){return new Date(d).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}

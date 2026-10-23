@@ -62,10 +62,10 @@ function mkTopbar(){
   tb.appendChild(span('brand',CFG.storeName||t('app')));
   tb.appendChild(div('sp'));
   var lt=div('langt');
-  ['en','my'].forEach(function(l){lt.appendChild(btn('langb'+(lang===l?' on':''),l==='en'?'EN':'\u1019\u103c\u1014\u103a\u1019\u102c',function(){lang=l;render();}));});
+  ['en','my'].forEach(function(l){lt.appendChild(btn('langb'+(lang===l?' on':''),l==='en'?'EN':'\u1019\u103c\u1014\u103a\u1019\u102c',function(){setLang(l);}));});
   tb.appendChild(lt);
   var tabs=S.user&&S.user.role==='admin'?['dash','pos','tabs','inv','rep','stf','sett']:['pos','tabs','inv'];
-  tabs.forEach(function(v){tb.appendChild(btn('nb'+(S.view===v?' on':''),t(v),function(){if(v==='pos'&&S.tabMode){S.tabMode=false;S.editingTab=null;S.cart=[];}S.view=v;render();}));});
+  tabs.forEach(function(v){tb.appendChild(btn('nb'+(S.view===v?' on':''),t(v),async function(){if(S.tabMode&&(v!=='pos'||S.view==='pos'))await exitTabMode();S.view=v;render();}));});
   var chip=div('uchip',[div('udot'),span('',S.user?S.user.name:'')]);
   chip.onclick=function(){S.modal={type:'lgo'};render();};
   tb.appendChild(chip);

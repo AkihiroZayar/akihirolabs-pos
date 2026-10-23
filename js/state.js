@@ -4,7 +4,7 @@
  * https://github.com/AkihiroZayar/POS-SYTEM
  */
 // ── State ───────────────────────────────────────────────────
-var S={products:[],sales:[],staff:[],tabs:[],cart:[],search:'',cat:'All',cashReceived:0,user:null,lstep:'select',lstaff:null,lpin:'',view:'dash',modal:null,from:'',to:'',tabMode:false,editingTab:null};
+var S={busy:false,products:[],sales:[],staff:[],tabs:[],cart:[],search:'',cat:'All',cashReceived:0,user:null,lstep:'select',lstaff:null,lpin:'',view:'dash',modal:null,from:'',to:'',tabMode:false,editingTab:null};
 
 // ── Seed ────────────────────────────────────────────────────
 async function seed(){
@@ -50,25 +50,30 @@ async function seed(){
 function cats(){var a=['All'],seen={};S.products.forEach(function(p){if(!seen[p.category]){seen[p.category]=1;a.push(p.category);}});return a.sort(function(a,b){return a==='All'?-1:b==='All'?1:a.localeCompare(b);});}
 function fprods(){return S.products.filter(function(p){return(S.cat==='All'||p.category===S.cat)&&p.name.toLowerCase().indexOf(S.search.toLowerCase())>=0;});}
 function cartTotal(){return S.cart.reduce(function(a,i){return a+i.price*i.qty;},0);}
-function fsales(){return S.sales.filter(function(s){var d=new Date(s.time);if(S.from){var f=new Date(S.from);f.setHours(0,0,0,0);if(d<f)return false;}if(S.to){var f2=new Date(S.to);f2.setHours(23,59,59,999);if(d>f2)return false;}return true;});}
-function qAmts(total){var a=[];[1000,2000,5000,10000,20000,50000].forEach(function(u){var v=Math.ceil(total/u)*u;if(v>=total)a.push(v);});if(a.indexOf(total)<0)a.push(total);return a.filter(function(x){return x>=total;}).sort(function(a,b){return a-b;}).slice(0,3);}
+function fsales(){return S.sales.filter(function(s){var d=new Date(s.time);if(S.from){var f=parseYmd(S.from);if(d<f)return false;}if(S.to){var f2=parseYmd(S.to);f2.setHours(23,59,59,999);if(d>f2)return false;}return true;});}
+function qAmts(total){if(total<=0)return[];var a=[];[1000,2000,5000,10000,20000,50000].forEach(function(u){var v=Math.ceil(total/u)*u;if(v>=total)a.push(v);});if(a.indexOf(total)<0)a.push(total);return a.filter(function(x){return x>=total;}).filter(function(x,i,arr){return arr.indexOf(x)===i;}).sort(function(a,b){return a-b;}).slice(0,3);}
 function todaySales(){var td=new Date().toDateString();return S.sales.filter(function(s){return new Date(s.time).toDateString()===td;});}
-function lowStk(){return S.products.filter(function(p){var m=p.minStock||0;return m>0&&p.stock<=m;}).sort(function(a,b){return a.stock-b.stock;});}
+function lowStk(){return S.products.filter(function(p){var m=p.minStock||0;return p.stock<=0||(m>0&&p.stock<=m);}).sort(function(a,b){return a.stock-b.stock;});}
 function topProds(n){var pm={};todaySales().forEach(function(s){s.items.forEach(function(i){if(!pm[i.name])pm[i.name]={q:0,r:0};pm[i.name].q+=i.qty;pm[i.name].r+=i.price*i.qty;});});return Object.entries(pm).sort(function(a,b){return b[1].r-a[1].r;}).slice(0,n||5);}
 
 // ── Cart ────────────────────────────────────────────────────
 function tryAdd(p){if(p.sizes&&p.sizes.length>0){S.modal={type:'sizePick',product:p};render();return;}addToCart(p.name,effPrice(p,null),p.id);}
-function addToCart(name,price,prodId){var key=name+'__'+price;var ex=S.cart.find(function(i){return i.key===key;});var p=S.products.find(function(x){return x.id===prodId;});if(p&&p.stock<=0)return;if(ex)ex.qty++;else S.cart.push({key:key,name:name,price:price,prodId:prodId,qty:1});S.modal=null;render();}
-function chqty(key,d){var i=S.cart.find(function(x){return x.key===key;});if(!i)return;i.qty+=d;if(i.qty<=0)S.cart=S.cart.filter(function(x){return x.key!==key;});render();}
+function cartQtyFor(prodId){return S.cart.reduce(function(a,i){return a+(i.prodId===prodId?i.qty:0);},0);}
+function atStockLimit(prodId){var p=S.products.find(function(x){return x.id===prodId;});return !!p&&cartQtyFor(prodId)>=p.stock;}
+function addToCart(name,price,prodId){var key=name+'__'+price;var ex=S.cart.find(function(i){return i.key===key;});if(atStockLimit(prodId)){S.modal=null;render();return;}if(ex)ex.qty++;else S.cart.push({key:key,name:name,price:price,prodId:prodId,qty:1});S.modal=null;render();}
+function chqty(key,d){var i=S.cart.find(function(x){return x.key===key;});if(!i)return;if(d>0&&atStockLimit(i.prodId))return;i.qty+=d;if(i.qty<=0)S.cart=S.cart.filter(function(x){return x.key!==key;});render();}
 
 async function checkout(){
-  if(!S.cart.length)return;
+  if(S.busy||!S.cart.length)return;
   var total=cartTotal();var change=S.cashReceived-total;if(change<0)return;
+  S.busy=true;try{
   var sale={items:S.cart.map(function(i){return{name:i.name,price:i.price,qty:i.qty,prodId:i.prodId};}),total:total,cashReceived:S.cashReceived,change:change,method:'Cash',time:new Date().toISOString(),staffId:S.user?S.user.id:null,staffName:S.user?S.user.name:''};
   await dbAdd('sales',sale);
   var deduct={};S.cart.forEach(function(i){deduct[i.prodId]=(deduct[i.prodId]||0)+i.qty;});
   for(var id in deduct){var p=S.products.find(function(x){return x.id===parseInt(id);});if(p){p.stock=Math.max(0,p.stock-deduct[id]);await dbPut('products',p);}}
-  S.sales=await dbAll('sales');S.modal={type:'ok',sale:sale};S.cart=[];S.cashReceived=0;render();
+  S.sales=await dbAll('sales');S.products=await dbAll('products');S.modal={type:'ok',sale:sale};S.cart=[];S.cashReceived=0;
+  }finally{S.busy=false;}
+  render();
 }
 
 // ── Tabs ────────────────────────────────────────────────────
@@ -77,22 +82,31 @@ async function openNewTab(name){
   var id=await dbAdd('tabs',tab);tab.id=id;
   S.tabs=await dbAll('tabs');S.editingTab=tab;S.cart=[];S.cashReceived=0;S.tabMode=true;S.view='pos';render();
 }
+// Write the tab being edited back to the DB (used by Save Tab, and when leaving POS / logging out so nothing is lost).
+async function persistTab(){
+  if(!S.tabMode||!S.editingTab)return;
+  var tab=Object.assign({},S.editingTab,{items:S.cart.map(function(i){return{name:i.name,price:i.price,qty:i.qty,prodId:i.prodId};}),total:cartTotal()});
+  await dbPut('tabs',tab);S.tabs=await dbAll('tabs');
+}
+async function exitTabMode(){await persistTab();S.editingTab=null;S.tabMode=false;S.cart=[];S.cashReceived=0;}
 async function saveTab(){
   if(!S.editingTab)return;
-  var tab=Object.assign({},S.editingTab,{items:S.cart.map(function(i){return{name:i.name,price:i.price,qty:i.qty,prodId:i.prodId};}),total:cartTotal()});
-  await dbPut('tabs',tab);S.tabs=await dbAll('tabs');S.editingTab=null;S.tabMode=false;S.cart=[];S.view='tabs';render();
+  await exitTabMode();S.view='tabs';render();
 }
-async function loadTab(tab){S.editingTab=Object.assign({},tab);S.cart=tab.items.map(function(i){return Object.assign({},i,{key:i.name+'__'+i.price});});S.cashReceived=0;S.tabMode=true;S.view='pos';render();}
+async function loadTab(tab){await exitTabMode();S.editingTab=Object.assign({},tab);S.cart=tab.items.map(function(i){return Object.assign({},i,{key:i.name+'__'+i.price});});S.cashReceived=0;S.tabMode=true;S.view='pos';render();}
 async function chargeTab(){
-  if(!S.editingTab||!S.cart.length)return;
+  if(S.busy||!S.editingTab||!S.cart.length)return;
   var total=cartTotal();var change=S.cashReceived-total;if(change<0)return;
+  S.busy=true;try{
   var sale={items:S.cart.map(function(i){return{name:i.name,price:i.price,qty:i.qty,prodId:i.prodId};}),total:total,cashReceived:S.cashReceived,change:change,method:'Cash',time:new Date().toISOString(),staffId:S.user?S.user.id:null,staffName:S.user?S.user.name:'',tabName:S.editingTab.name};
   await dbAdd('sales',sale);
   if(S.editingTab.id)await dbDel('tabs',S.editingTab.id);
   var deduct={};S.cart.forEach(function(i){deduct[i.prodId]=(deduct[i.prodId]||0)+i.qty;});
   for(var id in deduct){var p=S.products.find(function(x){return x.id===parseInt(id);});if(p){p.stock=Math.max(0,p.stock-deduct[id]);await dbPut('products',p);}}
-  S.sales=await dbAll('sales');S.tabs=await dbAll('tabs');
-  S.modal={type:'ok',sale:sale};S.cart=[];S.cashReceived=0;S.editingTab=null;S.tabMode=false;render();
+  S.sales=await dbAll('sales');S.tabs=await dbAll('tabs');S.products=await dbAll('products');
+  S.modal={type:'ok',sale:sale};S.cart=[];S.cashReceived=0;S.editingTab=null;S.tabMode=false;
+  }finally{S.busy=false;}
+  render();
 }
-async function delTab(id){await dbDel('tabs',id);S.tabs=await dbAll('tabs');render();}
+async function delTab(tab){if(!confirm(t('cfDelTab',{n:tab.name})))return;await dbDel('tabs',tab.id);S.tabs=await dbAll('tabs');render();}
 async function adjStock(id,delta){var p=S.products.find(function(x){return x.id===id;});if(!p)return;p.stock=Math.max(0,p.stock+delta);await dbPut('products',p);S.products=await dbAll('products');render();}

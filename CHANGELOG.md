@@ -3,6 +3,20 @@
 All notable changes to **AkihiroLabs POS** are documented here.
 This project follows [Semantic Versioning](https://semver.org/).
 
+## [10.7.0] — 2026-10-23
+
+### Added
+- **Refunds (admin only).** In Reports, every sale has a **Refund** button:
+  - refund the whole sale (**Refund all**) or pick items and quantities;
+  - **Return items to stock** (on by default) puts stock back into the exact size; untick it for
+    broken / spilled items;
+  - confirmation before refunding; the original sale is kept, with each refund listed under it
+    (time, staff, items, amount, restocked or not).
+- Reports show **Period sales**, **Refunds** and **Net revenue**; a refund counts on the day it
+  was given. Today's revenue (Reports and Dashboard) is net of today's refunds.
+- Product breakdown and top sellers subtract refunded items.
+- CSV export adds *Refunded* and *Net* columns plus refund rows; the PDF report shows refunds and net.
+
 ## [10.6.0] — 2026-10-23
 
 ### Changed

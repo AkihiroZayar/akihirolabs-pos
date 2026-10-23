@@ -12,10 +12,10 @@ function renderTabs(){
   else{
     var tc=div('tab-cards');
     open.forEach(function(tab){
-      var card=div('tab-card',[div('tab-card-nm',tab.name),div('tab-card-items',tab.items.map(function(i){return i.name+' \xd7'+i.qty;}).join(', ')||'Empty'),div('tab-card-total',ks(tab.total||0)),div('tab-card-meta','Opened: '+new Date(tab.createdAt).toLocaleString())]);
+      var card=div('tab-card',[div('tab-card-nm',tab.name),div('tab-card-items',tab.items.map(function(i){return i.name+' \xd7'+i.qty;}).join(', ')||t('empty')),div('tab-card-total',ks(tab.total||0)),div('tab-card-meta',t('opened',{t:new Date(tab.createdAt).toLocaleString()}))]);
       var acts=div('tab-card-acts');
       var ob=btn('btn btnpr',t('openTab'),function(){loadTab(tab);});ob.style.fontSize='11px';
-      var db=btn('btn btndg','Delete',function(){delTab(tab.id);});db.style.fontSize='11px';
+      var db=btn('btn btndg',t('dl'),function(){delTab(tab);});db.style.fontSize='11px';
       acts.appendChild(ob);acts.appendChild(db);card.appendChild(acts);tc.appendChild(card);
     });
     sc.appendChild(tc);

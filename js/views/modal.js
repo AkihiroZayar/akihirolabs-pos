@@ -21,20 +21,20 @@ function renderModal(){
   if(S.modal.type==='newTab'){
     box.appendChild(h('h3',{},t('newTab')));
     var f=div('field');f.appendChild(h('label',{},t('tabName')));
-    var ni=inp({type:'text',placeholder:'e.g. Table 3, John...'});f.appendChild(ni);box.appendChild(f);
-    box.appendChild(div('mbtns',[btn('btn',t('cn'),function(){S.modal=null;render();}),btn('btn btnpr',t('openTab'),function(){S.modal=null;openNewTab(ni.value||'Guest');})]));
+    var ni=inp({type:'text',placeholder:t('tabPh')});ni.onkeydown=function(e){if(e.key==='Enter'){S.modal=null;openNewTab(ni.value.trim()||'Guest');}};f.appendChild(ni);box.appendChild(f);
+    box.appendChild(div('mbtns',[btn('btn',t('cn'),function(){S.modal=null;render();}),btn('btn btnpr',t('openTab'),function(){S.modal=null;openNewTab(ni.value.trim()||'Guest');})]));
     ov.appendChild(box);setTimeout(function(){ni.focus();},50);return ov;
   }
   // success
   if(S.modal.type==='ok'){
     var s=S.modal.sale;
-    box.appendChild(div('sucmod',[span('sucico',icon('checkCircle',44)),div('sucamt',ks(s.total)),div('sucsub',t('cashRec')+': '+ks(s.cashReceived)),div('suc-lbl',t('change')),div('suc-change',ks(s.change||0)),btn('btn btnpr','OK',function(){S.modal=null;render();})]));
+    box.appendChild(div('sucmod',[span('sucico',icon('checkCircle',44)),div('sucamt',ks(s.total)),div('sucsub',t('cashRec')+': '+ks(s.cashReceived)),div('suc-lbl',t('change')),div('suc-change',ks(s.change||0)),btn('btn btnpr',t('ok'),function(){S.modal=null;render();})]));
     ov.appendChild(box);return ov;
   }
   // logout
   if(S.modal.type==='lgo'){
     box.appendChild(h('h3',{},t('lgo')+'?'));
-    box.appendChild(div('mbtns',[btn('btn',t('cn'),function(){S.modal=null;render();}),btn('btn btndg',t('lgo'),function(){S.user=null;S.modal=null;S.lstep='select';S.cart=[];S.cashReceived=0;S.tabMode=false;S.editingTab=null;render();})]));
+    box.appendChild(div('mbtns',[btn('btn',t('cn'),function(){S.modal=null;render();}),btn('btn btndg',t('lgo'),async function(){await exitTabMode();S.user=null;S.modal=null;S.lstep='select';S.cart=[];S.cashReceived=0;render();})]));
     ov.appendChild(box);return ov;
   }
   // product / staff forms
@@ -53,7 +53,7 @@ function renderModal(){
     box.appendChild(field(t('nm'),'name','text'));
     box.appendChild(field(t('cat'),'category','text',t('catex')));
     box.appendChild(field(t('st'),'stock','number'));
-    box.appendChild(field(t('minStk')+' (alert below this)','minStock','number'));
+    box.appendChild(field(t('minStkHint'),'minStock','number'));
     var tog=div('has-sizes-tog');var togBox=div('tbox'+(S.modal.data.hasSizes?' on':''));togBox.appendChild(div('tknob'));tog.appendChild(togBox);tog.appendChild(span('',t('hasSizes')));
     tog.onclick=function(){S.modal.data.hasSizes=!S.modal.data.hasSizes;if(!S.modal.data.hasSizes)S.modal.data.sizes=[];togBox.className='tbox'+(S.modal.data.hasSizes?' on':'');sizeSec.style.display=S.modal.data.hasSizes?'block':'none';bpf.style.display=S.modal.data.hasSizes?'none':'block';};
     box.appendChild(tog);
@@ -65,15 +65,34 @@ function renderModal(){
     sizeSec.appendChild(asb);box.appendChild(sizeSec);
   }
   var btns=div('mbtns',[btn('btn',t('cn'),function(){S.modal=null;render();})]);
-  if(isEdit){btns.appendChild(btn('btn btndg',t('dl'),async function(){if(isStaff){await dbDel('staff',S.modal.data.id);S.staff=await dbAll('staff');}else{await dbDel('products',S.modal.data.id);S.products=await dbAll('products');}S.modal=null;render();}));}
+  if(isEdit){btns.appendChild(btn('btn btndg',t('dl'),async function(){
+    var d0=S.modal.data;
+    if(isStaff){
+      if(S.user&&d0.id===S.user.id){alert(t('selfDel'));return;}
+      var orig=S.staff.find(function(x){return x.id===d0.id;});
+      if(orig&&orig.role==='admin'&&S.staff.filter(function(x){return x.role==='admin';}).length<=1){alert(t('lastAdm'));return;}
+      if(!confirm(t('cfDelStaff',{n:d0.name})))return;
+      await dbDel('staff',d0.id);S.staff=await dbAll('staff');
+    }else{
+      if(!confirm(t('cfDelProd',{n:d0.name})))return;
+      await dbDel('products',d0.id);S.products=await dbAll('products');
+      S.cart=S.cart.filter(function(i){return i.prodId!==d0.id;});
+    }
+    S.modal=null;render();}));}
   btns.appendChild(btn('btn btnpr',t('sv'),async function(){
     var d=S.modal.data;
     if(isStaff){
-      if(!d.name)return;if(!isEdit&&!d.pin)return;
-      var item=Object.assign({},d);if(isEdit&&d.npin&&d.npin.length===4)item.pin=d.npin;delete item.npin;
+      d.name=(d.name||'').trim();if(!d.name){alert(t('needName'));return;}
+      if(!isEdit&&!/^\d{4}$/.test(d.pin||'')){alert(t('pinBad'));return;}
+      if(isEdit&&d.npin&&!/^\d{4}$/.test(d.npin)){alert(t('pinBad'));return;}
+      var origS=isEdit?S.staff.find(function(x){return x.id===d.id;}):null;
+      if(origS&&origS.role==='admin'&&d.role!=='admin'&&S.staff.filter(function(x){return x.role==='admin';}).length<=1){alert(t('lastAdm'));return;}
+      var item=Object.assign({},d);if(isEdit&&d.npin)item.pin=d.npin;delete item.npin;
       if(item.id)await dbPut('staff',item);else await dbAdd('staff',item);S.staff=await dbAll('staff');
+      if(S.user&&item.id===S.user.id){S.user=S.staff.find(function(x){return x.id===item.id;})||S.user;if(S.user.role!=='admin'&&['dash','rep','stf','sett'].indexOf(S.view)>=0)S.view='pos';}
     }else{
-      if(!d.name)return;
+      d.name=(d.name||'').trim();if(!d.name){alert(t('needName'));return;}
+      d.category=(d.category||'').trim()||'Other';
       var sizes=d.hasSizes?(d.sizes||[]).filter(function(s){return s.label&&s.price;}):[];
       var basePrice=d.hasSizes&&sizes.length?sizes[0].price:parseInt(d.price)||0;
       var item2=Object.assign({},d,{price:basePrice,stock:parseInt(d.stock)||0,minStock:parseInt(d.minStock)||0,sizes:sizes});

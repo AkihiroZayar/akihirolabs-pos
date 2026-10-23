@@ -10,7 +10,7 @@ function renderStaff(){
   sc.appendChild(hd);
   var sg=div('staffgrid');
   S.staff.forEach(function(s){
-    var card=div('staffcard',[div('scavatar',s.initials||(s.name.slice(0,2).toUpperCase())),div('scinfo',[div('scname',s.name),span('badge '+(s.role==='admin'?'badm':'bcas'),t(s.role==='admin'?'adm':'cas'))]),btn('scedit','Edit',function(){S.modal={type:'estf',data:Object.assign({},s,{npin:''})};render();})]);
+    var card=div('staffcard',[div('scavatar',s.initials||(s.name.slice(0,2).toUpperCase())),div('scinfo',[div('scname',s.name),span('badge '+(s.role==='admin'?'badm':'bcas'),t(s.role==='admin'?'adm':'cas'))]),btn('scedit',t('edit'),function(){S.modal={type:'estf',data:Object.assign({},s,{npin:''})};render();})]);
     sg.appendChild(card);
   });
   sc.appendChild(sg);wrap.appendChild(sc);return[wrap];

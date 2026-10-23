@@ -30,7 +30,7 @@ function renderPOS(){
       var priceStr=hasSz?(minP===maxP?ks(minP):ks(minP)+' \u2013 '+ks(maxP)):ks(effPrice(p,null));
       var children=[div('pname',p.name),div('pprice',priceStr),div('pstock '+sc2,sl)];
       if(hasSz)children.push(div('psize-hint',p.sizes.map(function(s){return s.label;}).join(' / ')));
-      if(hhOn)children.push(div('hh-badge','\u2212'+CFG.happyHourDiscount+'%'));
+      if(hhOn)children.push(div('hh-badge','\u2212'+hhPct()+'%'));
       var card=div('pcard'+(p.stock===0?' gone':''),children);
       card.onclick=function(){if(p.stock>0)tryAdd(p);};pg.appendChild(card);
     });
@@ -49,7 +49,7 @@ function renderPOS(){
   var cd=div('cash-display',S.cashReceived>0?S.cashReceived.toLocaleString()+' Ks':'0 Ks');cd.id='cash-display';
   if(S.cashReceived>0){var ch=S.cashReceived-total;cd.style.color=ch<0?'var(--danger)':ch===0?'var(--success)':'var(--accent2)';}
   cc.appendChild(cd);
-  var qb=div('quick-btns');
+  var qb=div('quick-btns');if(total<=0)qb.style.display='none';
   qAmts(total).forEach(function(amt){var isExact=amt===total;var b=btn('qkbtn',isExact?il('check',t('exact'),12):ks(amt),function(){S.cashReceived=amt;doRefresh();});if(isExact)b.style.cssText='border-color:var(--accent);color:var(--accent)';qb.appendChild(b);});
   cc.appendChild(qb);rc.appendChild(cc);
   var cn=div('cnumpad');var np=div('numpad-wrap');
@@ -80,7 +80,7 @@ function renderPOS(){
     var box=document.getElementById('change-box')||changeBox;
     var cls2=S.cashReceived===0?'empty':ch>0?'ok':ch===0?'zero':'short';
     box.className='change-box '+cls2;box.innerHTML='';
-    if(S.cashReceived===0){box.appendChild(div('change-lbl empty','Enter cash amount'));box.appendChild(div('change-amt empty','\u2014'));}
+    if(S.cashReceived===0){box.appendChild(div('change-lbl empty',t('enterCash')));box.appendChild(div('change-amt empty','\u2014'));}
     else{box.appendChild(div('change-lbl '+cls2,ch>0?t('change'):ch===0?il('check',t('exact'),12):t('short')));box.appendChild(div('change-amt '+cls2,ks(Math.abs(ch))));}
     var pb=document.getElementById('pay-btn');if(pb)pb.disabled=(S.cart.length===0||ch<0);
   }

@@ -7,10 +7,10 @@
 function renderLogin(){
   var wrap=div('loginsc');
   wrap.appendChild(div('loginlogo',CFG.storeName||t('app')));
-  wrap.appendChild(div('loginsub','Point of Sale'));
+  wrap.appendChild(div('loginsub',t('posSub')));
   var card=div('logincard');
   var lt=div('langt',null,'margin-bottom:16px');
-  ['en','my'].forEach(function(l){lt.appendChild(btn('langb'+(lang===l?' on':''),l==='en'?'EN':'\u1019\u103c\u1014\u103a\u1019\u102c',function(){lang=l;render();}));});
+  ['en','my'].forEach(function(l){lt.appendChild(btn('langb'+(lang===l?' on':''),l==='en'?'EN':'\u1019\u103c\u1014\u103a\u1019\u102c',function(){setLang(l);}));});
   card.appendChild(lt);
   if(S.lstep==='select'){
     card.appendChild(div('',t('sel'),'font-size:13px;color:var(--muted);margin-bottom:12px'));
@@ -34,7 +34,7 @@ function renderLogin(){
           S.lpin=S.lpin.slice(0,i)+v+S.lpin.slice(i+1);
           if(v&&i<3)pg.children[i+1].focus();
           if(S.lpin.length===4){
-            if(S.lpin===S.lstaff.pin){S.user=S.lstaff;S.lstep='select';S.lpin='';S.view=S.lstaff.role==='admin'?'dash':'pos';render();}
+            if(S.lpin===String(S.lstaff.pin)){S.user=S.lstaff;S.lstep='select';S.lpin='';S.view=S.lstaff.role==='admin'?'dash':'pos';render();}
             else{S.lpin='';var err=document.getElementById('perr');if(err)err.textContent=t('wpin');Array.from(pg.children).forEach(function(c){c.value='';});pg.children[0].focus();}
           }
         };

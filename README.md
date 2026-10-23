@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-10.3.2-1E3A8A" alt="version 10.3.2">
+  <img src="https://img.shields.io/badge/version-10.3.3-1E3A8A" alt="version 10.3.3">
   <img src="https://img.shields.io/badge/vanilla-JavaScript-00A8CC" alt="Vanilla JS">
   <img src="https://img.shields.io/badge/storage-IndexedDB-1E3A8A" alt="IndexedDB">
   <img src="https://img.shields.io/badge/lang-English%20%7C%20Burmese-00A8CC" alt="English | Burmese">
@@ -103,7 +103,7 @@ This project uses [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PATCH
 - The version lives in **`js/version.js`** and is shown in the app footer and PDF reports.
 - To release: bump `APP_VERSION`, add an entry to [`CHANGELOG.md`](CHANGELOG.md), then create a GitHub Release tagged `vX.Y.Z`.
 
-Current version: **v10.3.2** — see the [changelog](CHANGELOG.md).
+Current version: **v10.3.3** — see the [changelog](CHANGELOG.md).
 
 ## Community
 

@@ -3,6 +3,27 @@
 All notable changes to **AkihiroLabs POS** are documented here.
 This project follows [Semantic Versioning](https://semver.org/).
 
+## [10.3.3] — 2026-10-23
+
+### Fixed
+- **Quick-cash buttons:** no more three "Exact" buttons on an empty cart, and no duplicate amounts (e.g. 34,000 twice).
+- **Stock limits:** the cart can no longer hold more of a product than is in stock (all sizes counted together).
+- **Double payment:** tapping Confirm Payment / Charge & Close twice quickly no longer records the sale twice.
+- **Tabs:** items added to a tab are saved automatically when you leave POS or log out, instead of being lost.
+- **Dates:** report date filters, the "Today" button and the backup file name now use local time
+  (before, early-morning sales could land on the wrong day).
+- **Delete safety:** deleting a product, staff member or tab now asks for confirmation.
+- **Staff:** PINs must be exactly 4 digits; you can't delete your own account or remove the last admin.
+- **Restore:** asks before replacing data, rejects invalid files, now also restores tabs, works when
+  picking the same file twice, and signs everyone out afterwards.
+- **Happy hour:** discount is clamped to 0–50%, and invalid start/end times no longer break pricing.
+- **Times:** tab and PDF times show correctly (e.g. "5:03 PM" was cut to "5:03:").
+- **Low stock:** out-of-stock items now appear in the dashboard Low Stock list.
+- **Translations:** remaining English-only text (happy-hour banner, inventory, tabs, reports, settings,
+  login, messages) now switches to Burmese; the chosen language is remembered after reload.
+- PDF report escapes product/staff names; the dashboard stacks to one column on phones;
+  empty product category is saved as "Other"; Enter opens a new tab.
+
 ## [10.3.2] — 2026-10-23
 
 ### Fixed
